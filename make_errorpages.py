@@ -22,7 +22,9 @@ import re
 import sys
 
 HERE = os.path.dirname(os.path.abspath(__file__))
-sys.path.insert(0, "/mnt/e/ForgeServerDoctor")
+# Resolved from the environment so this published file does not state
+# anyone's local directory layout.
+sys.path.insert(0, os.environ.get("FSD_SRC", os.path.join(HERE, "..", "ForgeServerDoctor")))
 import forge_doctor as fd  # noqa: E402
 
 SITE = "https://jaakoby.github.io"
