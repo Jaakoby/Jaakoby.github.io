@@ -3,13 +3,13 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
-<title>An AI wrote these tools. Here is everything it got wrong first.</title>
-<meta name="description" content="Claude wrote the code, I brought thirteen real crash reports from a live 234-mod server. The tests passed 6 of 6 invented cases and then diagnosed 3 of 8 real ones. What the real data corrected.">
+<title>How these were built: a 234-mod server, and everything we got wrong first</title>
+<meta name="description" content="Built by Jakoby Tuckta with Claude. The first version passed every test we wrote and then diagnosed three of eight real crash reports. Here is what a live server corrected, and how each bug was caught.">
 <link rel="canonical" href="https://jaakoby.github.io/how-this-was-built.html">
 <link rel="icon" href="/img/icon.png">
 <meta property="og:type" content="article">
-<meta property="og:title" content="An AI wrote these tools. Here is everything it got wrong first.">
-<meta property="og:description" content="Claude wrote the code, I brought thirteen real crash reports from a live 234-mod server. The tests passed 6 of 6 invented cases and then diagnosed 3 of 8 real ones. What the real data corrected.">
+<meta property="og:title" content="How these were built: a 234-mod server, and everything we got wrong first">
+<meta property="og:description" content="Built by Jakoby Tuckta with Claude. The first version passed every test we wrote and then diagnosed three of eight real crash reports. Here is what a live server corrected, and how each bug was caught.">
 <meta property="og:url" content="https://jaakoby.github.io/how-this-was-built.html">
 <meta property="og:image" content="https://jaakoby.github.io/img/forge-server-doctor.png">
 <meta name="twitter:card" content="summary_large_image">
@@ -119,25 +119,32 @@
 <div class="wrap fixbody">
 <header class="top">
   <p class="eyebrow"><a href="/">Forge Server Tools</a> · <a href="/fix/">every failure mode</a> · <a href="/guides/">guides</a></p>
-  <h1>An AI wrote these tools. Here is everything it got wrong first.</h1>
+  <h1>How these were built: a 234-mod server, and everything we got wrong first</h1>
 </header>
 <section>
-<p class="deck">Claude wrote the code. I ran the server that proved it wrong.</p>
+<p class="deck">Written by me with Claude, and corrected by a server with 234 mods
+on it.</p>
 
-<h2>Why say so at all</h2>
-<p>Because it is going to come out — every commit in these repositories is tagged
-<code>Co-Authored-By: Claude</code> — and because the interesting part of this
-project is not the tools. It is the list of things a confident, well-tested AI
-got wrong until it was pointed at a real server.</p>
-<p>If you would rather not buy software an AI wrote, that is a completely
-reasonable position and the source of the free editions is right there to read.
-Everything below is the honest account.</p>
+<h2>Who did what</h2>
+<p>I will be straightforward about it, because vagueness here is worth less than
+specifics. <strong>Claude wrote the code and the tests.</strong> I ran the
+production server these were built against, supplied the thirteen real crash
+reports they were rebuilt from, made the calls about what shipped, and found or
+forced the fix for every bug listed below. Every commit is tagged
+<code>Co-Authored-By: Claude</code>; none of this is hidden.</p>
+<p>If that disqualifies these tools for you, that is a fair call and the full
+source of the free editions is right there to read before you decide.</p>
 
-<h2>The division of labour</h2>
-<p>Claude wrote essentially all of the code, the tests and this page. I set the
-goal, made the judgement calls, and — the part that actually mattered —
-supplied thirteen real crash reports and a 234-mod production server to test
-against. That sounds like the small half. It was not.</p>
+<h2>Why that is not the interesting part</h2>
+<p>The thing that makes a crash-report reader correct is not who typed it. It is
+whether it has been run against crashes that actually happened, by someone who
+already knew the answer and could tell when it was wrong.</p>
+<p>That is the real claim here, and it is the one worth checking: these were
+rebuilt from thirteen genuine crash reports off a live 234-mod server, and every
+bug below was caught by running them against reality rather than by reasoning
+harder. A tool written entirely by hand and tested only on invented examples
+would be in worse shape — in fact that is precisely the state version one was
+in, and the rest of this page is what fixed it.</p>
 
 <h2>Six tests out of six. Three real crashes out of eight.</h2>
 <p>The first version of the crash reader passed every test written for it. Six
@@ -202,13 +209,15 @@ already there, twice over. The field it trusted is only populated when a product
 has exactly one plain attachment.</p>
 <p><strong>An empty field is not proof of absence.</strong></p>
 
-<h2>What I take from it</h2>
-<p>Claude is genuinely fast and genuinely good at the writing part. What it could
-not do was know whether any of it was true, and it was confident either way.
-Every single correction above came from contact with a real server, real logs,
-and a real pack — not from more reasoning.</p>
-<p>So: it wrote the code, I brought the reality. Both halves were necessary, and
-the half that found the bugs was not the clever one.</p>
+<h2>What the process actually was</h2>
+<p>Claude is fast, consistent, and has better test hygiene than I would at 1am.
+What it cannot do is know whether any of it is true, and it is equally confident
+either way. Every correction above came from contact with a real server, real
+logs and a real pack — not from more reasoning.</p>
+<p>So the loop was: it writes, I point it at something real, the real thing
+disagrees, we fix it. Both halves were necessary, and the half that found the
+bugs was not the clever one. That is also why the test suites ship with the
+tools — they are the record of which version was wrong and how we knew.</p>
 
 <h2>Read it yourself</h2>
 <p>The free editions are complete, single-file and dependency-free, and every test
