@@ -77,6 +77,7 @@
   .products{display:grid;grid-template-columns:repeat(auto-fit,minmax(min(100%,19rem),1fr));gap:1.2rem}
   .card{background:var(--surface);border:1px solid var(--rule);border-radius:5px;padding:1.4rem 1.4rem 1.5rem;display:flex;flex-direction:column;gap:.7rem;min-width:0}
   .card h3{font-family:var(--display);font-weight:700;font-size:1.22rem;margin:0;letter-spacing:-.01em}
+  .card.bundle{border-color:var(--accent)}
   .card .price{font-family:var(--mono);font-size:.85rem;color:var(--accent);font-weight:600}
   .card p{font-size:.92rem;color:var(--ink-soft);margin:0;flex:1}
   .card ul{margin:.1rem 0 0;padding-left:1.1rem;font-size:.88rem;color:var(--ink-soft)}
@@ -138,6 +139,20 @@
   <p class="lede">Three jobs. One finds out why your server died. One finds the things that are broken and never say so. One keeps it running without looping on the same failure.</p>
 
   <div class="products">
+    <div class="card bundle">
+      <h3>The Server Operator's Bundle</h3>
+      <div class="price">$49 · all three, separately $72</div>
+      <p>All three tools, their full test suites, and a 380-line field manual: the triage order, how to read a Forge stack trace by hand, and all 24 failure modes with their fixes written out.</p>
+      <ul>
+        <li>Everything below, at a third off</li>
+        <li>The manual works with no Python at all — written for someone on a phone in a hosting panel</li>
+        <li>Every test mutation-checked; the suites ship as the honest documentation</li>
+      </ul>
+      <div class="actions">
+        <a class="btn" href="https://kaiven.gumroad.com/l/server-operator-bundle">Get the bundle — $49</a>
+      </div>
+    </div>
+
     <div class="card">
       <h3>Forge Server Doctor</h3>
       <div class="price">$19 · free edition available</div>
@@ -165,7 +180,7 @@
         <li>Flags duplicate mod jars before they stop your server booting</li>
       </ul>
       <div class="actions">
-        <a class="btn" href="https://kaiven.gumroad.com/">Get it — $24</a>
+        <a class="btn" href="https://kaiven.gumroad.com/l/pack-doctor">Get it — $24</a>
         <a class="btn ghost" href="https://github.com/Jaakoby/pack-doctor">Free edition</a>
       </div>
     </div>
