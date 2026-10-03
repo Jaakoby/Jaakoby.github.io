@@ -262,6 +262,225 @@ plausible — 1.20.1 is a real version string that appears everywhere in the log
 <a href="/fix/">all 24 →</a></p>
 """,
     },
+
+    {
+        "slug": "cant-keep-up-is-the-server-overloaded",
+        "query": "Can't keep up! Is the server overloaded? — what it actually means",
+        "desc": "This message is normal during chunk generation and alarming at 20 seconds. How to tell routine stutter from a real problem, and how to find what is eating the tick.",
+        "body": """
+<h2>What the message means</h2>
+<div class="fixpre"><pre>Can't keep up! Is the server overloaded?
+Running 2150ms or 43 ticks behind</pre></div>
+<p>A Minecraft tick should take 50ms. When one takes longer, the server falls
+behind and prints this, with how far behind it got.</p>
+
+<h2>Most of these are nothing</h2>
+<p>This is the part that matters: <strong>a few thousand milliseconds during chunk
+generation is normal.</strong> A player flying into unexplored terrain generates
+chunks, which is expensive, and the server catches up immediately afterwards.</p>
+<table>
+<tr><th>Behind by</th><th>Meaning</th></tr>
+<tr><td>Under 5,000ms, occasional</td><td>Normal. Chunk loading or a world save.</td></tr>
+<tr><td>5,000–20,000ms, repeating</td><td>Something is wrong. Worth investigating.</td></tr>
+<tr><td>Over 20,000ms</td><td>A real stall. Find it.</td></tr>
+<tr><td>60,000ms</td><td>The watchdog kills the server. See <a href="/fix/watchdog.html">watchdog timeouts</a>.</td></tr>
+</table>
+<p>If you alert on the first row you will train yourself to ignore the alerts
+entirely, which is worse than having none.</p>
+
+<h2>Finding what is actually eating the tick</h2>
+<p>Guessing from mod names does not work. Measure:</p>
+<ul>
+  <li><strong>Spark</strong> (<code>/spark profiler start</code>, then
+      <code>/spark profiler stop</code>) gives you a tree of where tick time went,
+      by mod and by method. It is the single most useful tool here and it is free.</li>
+  <li><strong>The watchdog's own stack trace.</strong> If a tick ever hits 60 seconds the
+      server dumps the stack of the thread that was stuck. That is not a symptom,
+      it is the diagnosis — read it the way you would any crash.</li>
+</ul>
+
+<h2>The usual culprits, in rough order</h2>
+<ul>
+  <li><strong>Chunk generation</strong> — players exploring, or a chunk-loader mod
+      keeping far-away areas ticking.</li>
+  <li><strong>Entity accumulation</strong> — mob farms, item entities from a broken
+      automation loop, bred animals nobody culled.</li>
+  <li><strong>Hopper and pipe chains</strong> — large item-transport networks tick
+      constantly whether or not anything moves.</li>
+  <li><strong>A world save on a huge world</strong> — periodic, brief, and benign.</li>
+  <li><strong>Garbage collection</strong> — if the stalls grow over hours, this is a
+      memory problem, not a tick problem. See
+      <a href="/guides/how-much-ram-modded-minecraft-server.html">how much RAM</a>.</li>
+</ul>
+
+<h2>What not to do</h2>
+<p>Do not raise <code>max-tick-time</code> to silence it, and never set it to
+<code>-1</code> outside of debugging. That disables the watchdog, which converts a
+crash into a server that hangs forever and that nobody can even disconnect from.</p>
+""",
+    },
+    {
+        "slug": "kubejs-recipe-not-working",
+        "query": "KubeJS recipe or tag silently does nothing",
+        "desc": "A mistyped item ID never crashes and never logs. Why these failures are invisible, and how to find them before your players do.",
+        "body": """
+<h2>The failure mode nobody notices</h2>
+<p>You write a recipe, a tag, or a quest reward referencing
+<code>minecraft:diamond_swrd</code>. Nothing crashes. Nothing appears in the log.
+The recipe simply does not exist, and you find out when a player asks why the
+quest gives nothing.</p>
+<p>This is the worst class of modpack bug precisely because it is silent. A crash
+tells you where to look; this tells you nothing at all.</p>
+
+<h2>Why it is silent</h2>
+<p>Most registry lookups resolve an ID to "absent" rather than throwing. A recipe
+referencing a missing item is skipped. A tag entry pointing at nothing contributes
+nothing. From the game's point of view nothing went wrong — you asked for a thing
+that does not exist, and it obliged.</p>
+
+<h2>Where these hide</h2>
+<ul>
+  <li><strong>Diet and food tags</strong> — a typo means a food has no diet category.
+      Entirely invisible until someone notices their nutrition never fills.</li>
+  <li><strong>Quest rewards</strong> — the quest completes and gives nothing.</li>
+  <li><strong>Recipe inputs</strong> — the recipe is absent from JEI; most people assume
+      it was never added.</li>
+  <li><strong>IDs from a mod you removed</strong> — every reference to it is now dead,
+      and there may be hundreds.</li>
+</ul>
+
+<h2>Finding them</h2>
+<p>The reliable method is to build an index of every ID your installed jars
+<em>actually register</em>, then check everything your scripts, configs, datapacks
+and quests reference against it.</p>
+<p>Two things make the difference between a useful report and noise:</p>
+<ul>
+  <li><strong>Only compare the path, not the whole ID.</strong> A shared namespace
+      contributes identical characters to both strings and inflates every
+      similarity score. Comparing whole IDs on a real pack produced 169 "typos",
+      most of them nonsense like <code>alicepack</code> → <code>icepick</code>
+      (0.905 on the full ID, 0.750 on the path alone). Path-only comparison cut
+      that to 63.</li>
+  <li><strong>Know that packs register their own content.</strong> KubeJS startup
+      scripts create items that exist in no jar. Treating those as unknown IDs
+      buries the real findings.</li>
+</ul>
+
+<h2>Tag namespaces are not registries</h2>
+<p><code>forge:</code> and <code>c:</code> are tag namespaces. IDs in them legitimately
+do not correspond to any registered item, so reporting them as missing produces
+pure noise. Likewise a leading <code>#</code> means a tag reference, not an item.</p>
+
+<p><a href="https://github.com/Jaakoby/pack-doctor">Pack Doctor</a> does this —
+the free edition inventories your mods and catches duplicate jars; the full
+version validates every referenced ID.</p>
+""",
+    },
+    {
+        "slug": "removing-a-mod-from-an-existing-world",
+        "query": "How to safely remove a mod from an existing Minecraft world",
+        "desc": "Removing a mod leaves the world referencing blocks and items that no longer exist. What is recoverable, what is not, and what to back up first.",
+        "body": """
+<h2>Back up the world first</h2>
+<p>Not advice — a prerequisite. Some of what follows is irreversible, and you will
+not get a second prompt. Copy the whole world folder somewhere else before you
+start.</p>
+
+<h2>What happens when you pull a mod</h2>
+<p>The world stores blocks and items by ID. Remove the mod and those IDs resolve
+to nothing. On next load you get:</p>
+<div class="fixpre"><pre>Unknown registry entries
+Missing registry entries</pre></div>
+<p>and a prompt asking whether to continue. Saying yes <strong>permanently deletes
+every block and item from that mod</strong> out of the world. See
+<a href="/fix/registry-remap.html">the full write-up</a>.</p>
+
+<h2>Do this before removing it</h2>
+<ol>
+  <li><strong>Find out what it still owns.</strong> Blocks placed, items in chests,
+      entities, and — easily forgotten — items inside other mods' machines and
+      backpacks.</li>
+  <li><strong>Break down anything of value in-game first</strong>, while the mod still
+      works. Machines holding items will take their contents with them.</li>
+  <li><strong>Check what depends on it.</strong> Another mod requiring it as a hard
+      dependency will refuse to start; see
+      <a href="/fix/missing-dependency.html">missing dependencies</a>.</li>
+  <li><strong>Check your scripts and quests.</strong> Every recipe, tag and reward
+      referencing the removed mod becomes a silent no-op — see
+      <a href="/guides/kubejs-recipe-not-working.html">silent ID failures</a>.</li>
+</ol>
+
+<h2>Chunk corruption is mostly a myth, with one exception</h2>
+<p>Removing a mod that adds blocks and items is usually survivable: the entries
+vanish and the world loads. The real risk is mods that add <em>worldgen</em> —
+dimensions, biomes, structures. Those leave chunk data the game can no longer
+interpret, and the boundary between generated and newly-generated terrain can be
+abrupt and permanent.</p>
+<p>A mod that adds a dimension is close to unremovable from a world you care
+about. Treat that as a decision made at pack-creation time.</p>
+
+<h2>If the server will not start afterwards</h2>
+<p>Put the mod back. The world loads again, and you can do the preparation above
+properly. This is the main reason to back up before the first attempt — restoring
+is instant, undoing a registry wipe is not.</p>
+""",
+    },
+    {
+        "slug": "minecraft-server-jvm-flags",
+        "query": "Which JVM flags actually matter for a modded Minecraft server",
+        "desc": "What Aikar's flags do, which ones still apply on modern Java, and the two settings that matter more than the whole rest of the list.",
+        "body": """
+<h2>The two that matter most</h2>
+<p>Before any flag list: <strong>the right Java version and a sane heap size</strong>
+account for more than every tuning flag combined.</p>
+<ul>
+  <li>Minecraft 1.17–1.20.4 wants <strong>Java 17</strong>; 1.20.5+ wants
+      <strong>Java 21</strong>; 1.16 and earlier want Java 8. Getting this wrong
+      produces <a href="/fix/java-version.html">UnsupportedClassVersionError</a>.</li>
+  <li><code>-Xmx</code> around 75% of physical RAM, and <code>-Xms</code> equal to it.
+      See <a href="/guides/how-much-ram-modded-minecraft-server.html">how much RAM</a>.</li>
+</ul>
+
+<h2>What Aikar's flags are</h2>
+<p>A widely-copied G1GC tuning set aimed at one goal: <strong>avoid long garbage
+collection pauses</strong>, even at the cost of slightly more total GC work. A GC
+pause is a frozen server, so trading throughput for shorter pauses is the right
+trade for a game.</p>
+<p>The ones doing the real work:</p>
+<ul>
+  <li><code>-XX:+UseG1GC</code> — the collector the rest assumes. Default on modern
+      Java, so usually redundant now.</li>
+  <li><code>-XX:MaxGCPauseMillis=200</code> — the target pause. This is the flag that
+      most directly reflects the goal.</li>
+  <li><code>-XX:G1NewSizePercent</code> / <code>G1MaxNewSizePercent</code> — a larger
+      young generation, because Minecraft allocates enormous numbers of
+      short-lived objects per tick.</li>
+  <li><code>-XX:+ParallelRefProcEnabled</code> — reference processing in parallel
+      rather than during the pause.</li>
+  <li><code>-XX:+PerfDisableSharedMem</code> — stops a stall when the JVM writes perf
+      data to a filesystem that happens to be slow.</li>
+</ul>
+
+<h2>What to be careful with</h2>
+<ul>
+  <li><strong>Do not copy a flag list for a different heap size.</strong> Several of
+      these are percentages tuned against a specific <code>-Xmx</code>.</li>
+  <li><strong>Do not stack collectors.</strong> Adding ZGC or Shenandoah flags on top
+      of a G1 set gives you neither, and the JVM may refuse to start.</li>
+  <li><strong>Flags will not fix a leak.</strong> If the server survives one restart and
+      dies sooner each time, no collector setting will save it — something is
+      holding references. More heap only buys proportionally more time.</li>
+</ul>
+
+<h2>Measure before and after</h2>
+<p>The honest version: most flag changes produce a difference you cannot feel, and
+it is very easy to convince yourself otherwise. Use Spark to record tick times
+before and after, and change <em>one</em> thing at a time. A plausible theory about
+performance is worth nothing against a measurement — the time a tool in this
+project took to run was once "fixed" by an obviously-correct change that moved
+the number by 0.00 seconds.</p>
+"""
+    },
     {
         "slug": "players-kicked-mod-mismatch",
         "query": "Players getting kicked from a modded server for a mod mismatch",

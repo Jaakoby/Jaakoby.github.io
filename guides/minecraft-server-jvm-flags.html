@@ -3,14 +3,14 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
-<title>Guides for running a modded Minecraft server</title>
-<meta name="description" content="How to find which mod crashed your server, read a crash report, size your heap, stop a restart loop, and fix mod-mismatch kicks.">
-<link rel="canonical" href="https://jaakoby.github.io/guides/">
+<title>Which JVM flags actually matter for a modded Minecraft server</title>
+<meta name="description" content="What Aikar's flags do, which ones still apply on modern Java, and the two settings that matter more than the whole rest of the list.">
+<link rel="canonical" href="https://jaakoby.github.io/guides/minecraft-server-jvm-flags.html">
 <link rel="icon" href="/img/icon.png">
-<meta property="og:type" content="website">
-<meta property="og:title" content="Guides for running a modded Minecraft server">
-<meta property="og:description" content="Find the mod that crashed your server, read a crash report, size your heap, stop a restart loop.">
-<meta property="og:url" content="https://jaakoby.github.io/guides/">
+<meta property="og:type" content="article">
+<meta property="og:title" content="Which JVM flags actually matter for a modded Minecraft server">
+<meta property="og:description" content="What Aikar's flags do, which ones still apply on modern Java, and the two settings that matter more than the whole rest of the list.">
+<meta property="og:url" content="https://jaakoby.github.io/guides/minecraft-server-jvm-flags.html">
 <meta property="og:image" content="https://jaakoby.github.io/img/forge-server-doctor.png">
 <meta name="twitter:card" content="summary_large_image">
 <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Archivo:wght@500;700;900&family=IBM+Plex+Mono:wght@400;500;600&family=IBM+Plex+Sans:wght@400;500;600&display=swap">
@@ -118,23 +118,77 @@
 <body>
 <div class="wrap fixbody">
 <header class="top">
-  <p class="eyebrow"><a href="/">Forge Server Tools</a> · <a href="/fix/">every failure mode</a></p>
-  <h1>Guides</h1>
-  <p class="deck">The questions you search before you have an error string to paste.</p>
+  <p class="eyebrow"><a href="/">Forge Server Tools</a> · <a href="/fix/">every failure mode</a> · <a href="/guides/">guides</a></p>
+  <h1>Which JVM flags actually matter for a modded Minecraft server</h1>
+  <p class="deck">What Aikar's flags do, which ones still apply on modern Java, and the two settings that matter more than the whole rest of the list.</p>
 </header>
-<section><ul class="fixlist">
-<li><a href="/guides/which-mod-is-crashing-my-server.html">How to find which mod is crashing your Minecraft server</a><span class="muted"> — Forge stamps every stack frame with the jar it came from. Read the trace, skip the vanilla frames, and the first mod jar left is almost always the culprit.</span></li>
-<li><a href="/guides/minecraft-server-keeps-restarting.html">Minecraft server keeps crashing and restarting in a loop</a><span class="muted"> — A server that dies the same way twice will die that way a hundred times. How to tell a repeating crash from unrelated ones, and stop the loop.</span></li>
-<li><a href="/guides/minecraft-server-wont-start-no-crash-report.html">Modded Minecraft server won't start and there is no crash report</a><span class="muted"> — No crash report means nothing crashed in Java. The process was killed from outside, or it never got far enough to write one. Where to look instead.</span></li>
-<li><a href="/guides/how-much-ram-modded-minecraft-server.html">How much RAM a modded Minecraft server actually needs</a><span class="muted"> — Realistic heap figures by mod count, why giving the JVM all your memory backfires, and how to tell a too-small heap from a genuine memory leak.</span></li>
-<li><a href="/guides/how-to-read-a-minecraft-crash-report.html">How to read a Minecraft crash report</a><span class="muted"> — Which four lines of a 400-line crash report actually matter, in what order to read them, and the sections most people never scroll to.</span></li>
-<li><a href="/guides/cant-keep-up-is-the-server-overloaded.html">Can't keep up! Is the server overloaded? — what it actually means</a><span class="muted"> — This message is normal during chunk generation and alarming at 20 seconds. How to tell routine stutter from a real problem, and how to find what is eating the tick.</span></li>
-<li><a href="/guides/kubejs-recipe-not-working.html">KubeJS recipe or tag silently does nothing</a><span class="muted"> — A mistyped item ID never crashes and never logs. Why these failures are invisible, and how to find them before your players do.</span></li>
-<li><a href="/guides/removing-a-mod-from-an-existing-world.html">How to safely remove a mod from an existing Minecraft world</a><span class="muted"> — Removing a mod leaves the world referencing blocks and items that no longer exist. What is recoverable, what is not, and what to back up first.</span></li>
-<li><a href="/guides/minecraft-server-jvm-flags.html">Which JVM flags actually matter for a modded Minecraft server</a><span class="muted"> — What Aikar's flags do, which ones still apply on modern Java, and the two settings that matter more than the whole rest of the list.</span></li>
-<li><a href="/guides/players-kicked-mod-mismatch.html">Players getting kicked from a modded server for a mod mismatch</a><span class="muted"> — Why clients bounce at Joining world, which mods must match and which must not, and how to read the rejection list.</span></li>
-</ul></section>
-<footer><p>Not affiliated with Mojang, Microsoft, MinecraftForge or NeoForged.</p></footer>
+<section>
+<h2>The two that matter most</h2>
+<p>Before any flag list: <strong>the right Java version and a sane heap size</strong>
+account for more than every tuning flag combined.</p>
+<ul>
+  <li>Minecraft 1.17–1.20.4 wants <strong>Java 17</strong>; 1.20.5+ wants
+      <strong>Java 21</strong>; 1.16 and earlier want Java 8. Getting this wrong
+      produces <a href="/fix/java-version.html">UnsupportedClassVersionError</a>.</li>
+  <li><code>-Xmx</code> around 75% of physical RAM, and <code>-Xms</code> equal to it.
+      See <a href="/guides/how-much-ram-modded-minecraft-server.html">how much RAM</a>.</li>
+</ul>
+
+<h2>What Aikar's flags are</h2>
+<p>A widely-copied G1GC tuning set aimed at one goal: <strong>avoid long garbage
+collection pauses</strong>, even at the cost of slightly more total GC work. A GC
+pause is a frozen server, so trading throughput for shorter pauses is the right
+trade for a game.</p>
+<p>The ones doing the real work:</p>
+<ul>
+  <li><code>-XX:+UseG1GC</code> — the collector the rest assumes. Default on modern
+      Java, so usually redundant now.</li>
+  <li><code>-XX:MaxGCPauseMillis=200</code> — the target pause. This is the flag that
+      most directly reflects the goal.</li>
+  <li><code>-XX:G1NewSizePercent</code> / <code>G1MaxNewSizePercent</code> — a larger
+      young generation, because Minecraft allocates enormous numbers of
+      short-lived objects per tick.</li>
+  <li><code>-XX:+ParallelRefProcEnabled</code> — reference processing in parallel
+      rather than during the pause.</li>
+  <li><code>-XX:+PerfDisableSharedMem</code> — stops a stall when the JVM writes perf
+      data to a filesystem that happens to be slow.</li>
+</ul>
+
+<h2>What to be careful with</h2>
+<ul>
+  <li><strong>Do not copy a flag list for a different heap size.</strong> Several of
+      these are percentages tuned against a specific <code>-Xmx</code>.</li>
+  <li><strong>Do not stack collectors.</strong> Adding ZGC or Shenandoah flags on top
+      of a G1 set gives you neither, and the JVM may refuse to start.</li>
+  <li><strong>Flags will not fix a leak.</strong> If the server survives one restart and
+      dies sooner each time, no collector setting will save it — something is
+      holding references. More heap only buys proportionally more time.</li>
+</ul>
+
+<h2>Measure before and after</h2>
+<p>The honest version: most flag changes produce a difference you cannot feel, and
+it is very easy to convince yourself otherwise. Use Spark to record tick times
+before and after, and change <em>one</em> thing at a time. A plausible theory about
+performance is worth nothing against a measurement — the time a tool in this
+project took to run was once "fixed" by an obviously-correct change that moved
+the number by 0.00 seconds.</p>
+</section>
+
+<section>
+  <h2>Doing this automatically</h2>
+  <p>Forge Server Doctor performs the whole procedure above — reads the report,
+  finds the real cause under the wrappers, skips the vanilla frames, and names
+  the mod jar. 24 failure modes, each with its fix. The free edition covers the
+  six most common startup failures.</p>
+  <div class="btnrow">
+    <a class="btn" href="https://github.com/Jaakoby/forge-server-doctor">Free edition on GitHub</a>
+    <a class="btn ghost" href="/#tools">All 24 checks</a>
+  </div>
+</section>
+<footer>
+  <p>Forge Server Tools — diagnostic aids, not authorities. Verify any diagnosis before acting on it, and keep a backup of your world.</p>
+  <p>Not affiliated with Mojang, Microsoft, MinecraftForge or NeoForged. Minecraft is a trademark of Mojang AB.</p>
+</footer>
 </div>
 </body>
 </html>

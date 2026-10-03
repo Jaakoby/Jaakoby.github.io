@@ -3,14 +3,14 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
-<title>Guides for running a modded Minecraft server</title>
-<meta name="description" content="How to find which mod crashed your server, read a crash report, size your heap, stop a restart loop, and fix mod-mismatch kicks.">
-<link rel="canonical" href="https://jaakoby.github.io/guides/">
+<title>How to safely remove a mod from an existing Minecraft world</title>
+<meta name="description" content="Removing a mod leaves the world referencing blocks and items that no longer exist. What is recoverable, what is not, and what to back up first.">
+<link rel="canonical" href="https://jaakoby.github.io/guides/removing-a-mod-from-an-existing-world.html">
 <link rel="icon" href="/img/icon.png">
-<meta property="og:type" content="website">
-<meta property="og:title" content="Guides for running a modded Minecraft server">
-<meta property="og:description" content="Find the mod that crashed your server, read a crash report, size your heap, stop a restart loop.">
-<meta property="og:url" content="https://jaakoby.github.io/guides/">
+<meta property="og:type" content="article">
+<meta property="og:title" content="How to safely remove a mod from an existing Minecraft world">
+<meta property="og:description" content="Removing a mod leaves the world referencing blocks and items that no longer exist. What is recoverable, what is not, and what to back up first.">
+<meta property="og:url" content="https://jaakoby.github.io/guides/removing-a-mod-from-an-existing-world.html">
 <meta property="og:image" content="https://jaakoby.github.io/img/forge-server-doctor.png">
 <meta name="twitter:card" content="summary_large_image">
 <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Archivo:wght@500;700;900&family=IBM+Plex+Mono:wght@400;500;600&family=IBM+Plex+Sans:wght@400;500;600&display=swap">
@@ -118,23 +118,70 @@
 <body>
 <div class="wrap fixbody">
 <header class="top">
-  <p class="eyebrow"><a href="/">Forge Server Tools</a> · <a href="/fix/">every failure mode</a></p>
-  <h1>Guides</h1>
-  <p class="deck">The questions you search before you have an error string to paste.</p>
+  <p class="eyebrow"><a href="/">Forge Server Tools</a> · <a href="/fix/">every failure mode</a> · <a href="/guides/">guides</a></p>
+  <h1>How to safely remove a mod from an existing Minecraft world</h1>
+  <p class="deck">Removing a mod leaves the world referencing blocks and items that no longer exist. What is recoverable, what is not, and what to back up first.</p>
 </header>
-<section><ul class="fixlist">
-<li><a href="/guides/which-mod-is-crashing-my-server.html">How to find which mod is crashing your Minecraft server</a><span class="muted"> — Forge stamps every stack frame with the jar it came from. Read the trace, skip the vanilla frames, and the first mod jar left is almost always the culprit.</span></li>
-<li><a href="/guides/minecraft-server-keeps-restarting.html">Minecraft server keeps crashing and restarting in a loop</a><span class="muted"> — A server that dies the same way twice will die that way a hundred times. How to tell a repeating crash from unrelated ones, and stop the loop.</span></li>
-<li><a href="/guides/minecraft-server-wont-start-no-crash-report.html">Modded Minecraft server won't start and there is no crash report</a><span class="muted"> — No crash report means nothing crashed in Java. The process was killed from outside, or it never got far enough to write one. Where to look instead.</span></li>
-<li><a href="/guides/how-much-ram-modded-minecraft-server.html">How much RAM a modded Minecraft server actually needs</a><span class="muted"> — Realistic heap figures by mod count, why giving the JVM all your memory backfires, and how to tell a too-small heap from a genuine memory leak.</span></li>
-<li><a href="/guides/how-to-read-a-minecraft-crash-report.html">How to read a Minecraft crash report</a><span class="muted"> — Which four lines of a 400-line crash report actually matter, in what order to read them, and the sections most people never scroll to.</span></li>
-<li><a href="/guides/cant-keep-up-is-the-server-overloaded.html">Can't keep up! Is the server overloaded? — what it actually means</a><span class="muted"> — This message is normal during chunk generation and alarming at 20 seconds. How to tell routine stutter from a real problem, and how to find what is eating the tick.</span></li>
-<li><a href="/guides/kubejs-recipe-not-working.html">KubeJS recipe or tag silently does nothing</a><span class="muted"> — A mistyped item ID never crashes and never logs. Why these failures are invisible, and how to find them before your players do.</span></li>
-<li><a href="/guides/removing-a-mod-from-an-existing-world.html">How to safely remove a mod from an existing Minecraft world</a><span class="muted"> — Removing a mod leaves the world referencing blocks and items that no longer exist. What is recoverable, what is not, and what to back up first.</span></li>
-<li><a href="/guides/minecraft-server-jvm-flags.html">Which JVM flags actually matter for a modded Minecraft server</a><span class="muted"> — What Aikar's flags do, which ones still apply on modern Java, and the two settings that matter more than the whole rest of the list.</span></li>
-<li><a href="/guides/players-kicked-mod-mismatch.html">Players getting kicked from a modded server for a mod mismatch</a><span class="muted"> — Why clients bounce at Joining world, which mods must match and which must not, and how to read the rejection list.</span></li>
-</ul></section>
-<footer><p>Not affiliated with Mojang, Microsoft, MinecraftForge or NeoForged.</p></footer>
+<section>
+<h2>Back up the world first</h2>
+<p>Not advice — a prerequisite. Some of what follows is irreversible, and you will
+not get a second prompt. Copy the whole world folder somewhere else before you
+start.</p>
+
+<h2>What happens when you pull a mod</h2>
+<p>The world stores blocks and items by ID. Remove the mod and those IDs resolve
+to nothing. On next load you get:</p>
+<div class="fixpre"><pre>Unknown registry entries
+Missing registry entries</pre></div>
+<p>and a prompt asking whether to continue. Saying yes <strong>permanently deletes
+every block and item from that mod</strong> out of the world. See
+<a href="/fix/registry-remap.html">the full write-up</a>.</p>
+
+<h2>Do this before removing it</h2>
+<ol>
+  <li><strong>Find out what it still owns.</strong> Blocks placed, items in chests,
+      entities, and — easily forgotten — items inside other mods' machines and
+      backpacks.</li>
+  <li><strong>Break down anything of value in-game first</strong>, while the mod still
+      works. Machines holding items will take their contents with them.</li>
+  <li><strong>Check what depends on it.</strong> Another mod requiring it as a hard
+      dependency will refuse to start; see
+      <a href="/fix/missing-dependency.html">missing dependencies</a>.</li>
+  <li><strong>Check your scripts and quests.</strong> Every recipe, tag and reward
+      referencing the removed mod becomes a silent no-op — see
+      <a href="/guides/kubejs-recipe-not-working.html">silent ID failures</a>.</li>
+</ol>
+
+<h2>Chunk corruption is mostly a myth, with one exception</h2>
+<p>Removing a mod that adds blocks and items is usually survivable: the entries
+vanish and the world loads. The real risk is mods that add <em>worldgen</em> —
+dimensions, biomes, structures. Those leave chunk data the game can no longer
+interpret, and the boundary between generated and newly-generated terrain can be
+abrupt and permanent.</p>
+<p>A mod that adds a dimension is close to unremovable from a world you care
+about. Treat that as a decision made at pack-creation time.</p>
+
+<h2>If the server will not start afterwards</h2>
+<p>Put the mod back. The world loads again, and you can do the preparation above
+properly. This is the main reason to back up before the first attempt — restoring
+is instant, undoing a registry wipe is not.</p>
+</section>
+
+<section>
+  <h2>Doing this automatically</h2>
+  <p>Forge Server Doctor performs the whole procedure above — reads the report,
+  finds the real cause under the wrappers, skips the vanilla frames, and names
+  the mod jar. 24 failure modes, each with its fix. The free edition covers the
+  six most common startup failures.</p>
+  <div class="btnrow">
+    <a class="btn" href="https://github.com/Jaakoby/forge-server-doctor">Free edition on GitHub</a>
+    <a class="btn ghost" href="/#tools">All 24 checks</a>
+  </div>
+</section>
+<footer>
+  <p>Forge Server Tools — diagnostic aids, not authorities. Verify any diagnosis before acting on it, and keep a backup of your world.</p>
+  <p>Not affiliated with Mojang, Microsoft, MinecraftForge or NeoForged. Minecraft is a trademark of Mojang AB.</p>
+</footer>
 </div>
 </body>
 </html>
