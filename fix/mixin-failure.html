@@ -1,0 +1,157 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>Mixin apply failed InvalidInjectionException — what it means and how to fix it</title>
+<meta name="description" content="A mod patches a Minecraft method at runtime, and the method it expects isn't shaped the way it expects. Almost always: the mod is built for a different Min">
+<link rel="canonical" href="https://jaakoby.github.io/fix/mixin-failure.html">
+<link rel="icon" href="/img/icon.png">
+<meta property="og:type" content="article">
+<meta property="og:title" content="Mixin apply failed InvalidInjectionException">
+<meta property="og:description" content="A mod patches a Minecraft method at runtime, and the method it expects isn't shaped the way it expects. Almost always: the mod is built for a different Min">
+<meta property="og:url" content="https://jaakoby.github.io/fix/mixin-failure.html">
+<meta property="og:image" content="https://jaakoby.github.io/img/forge-server-doctor.png">
+<meta name="twitter:card" content="summary_large_image">
+<script type="application/ld+json">{"@context":"https://schema.org","@type":"FAQPage","mainEntity":[{"@type":"Question","name":"Mixin apply failed InvalidInjectionException","acceptedAnswer":{"@type":"Answer","text":"A mod patches a Minecraft method at runtime, and the method it expects isn't shaped the way it expects. Almost always: the mod is built for a different Minecraft version, or two mods are patching the same method and one clobbered the other. Check the failing mod is built for YOUR exact Minecraft version -- not 'close enough'. 1.20.1 and 1.20.4 are not interchangeable. If the version is right, the owner named in the error conflicts with another mod touching the same code; remove one and retest. Performance and rendering mods are the usual pair."}}]}</script>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Archivo:wght@500;700;900&family=IBM+Plex+Mono:wght@400;500;600&family=IBM+Plex+Sans:wght@400;500;600&display=swap">
+<style>
+  :root{
+    --bg:#f4f2ee; --surface:#fff; --surface-alt:#ebe8e1;
+    --ink:#1c1b19; --ink-soft:#56534d; --ink-faint:#8a867e; --rule:#d9d5cc;
+    --fatal:#a8291b; --warn:#9a6508; --ok:#3f6b3a; --accent:#b4541f;
+    --console-bg:#1b1a18; --console-fg:#e6e1d6; --console-dim:#8f897c;
+    --display:'Archivo','Helvetica Neue',Arial,sans-serif;
+    --body:'IBM Plex Sans',system-ui,-apple-system,sans-serif;
+    --mono:'IBM Plex Mono',ui-monospace,Menlo,monospace;
+    color-scheme:light;
+  }
+  @media (prefers-color-scheme:dark){
+    :root:not([data-theme="light"]){
+      --bg:#15161a; --surface:#1d1f24; --surface-alt:#25282e;
+      --ink:#ecebe7; --ink-soft:#a8a69f; --ink-faint:#76746d; --rule:#32353c;
+      --fatal:#e4705e; --warn:#d9a743; --ok:#7fb574; --accent:#e08a53;
+      --console-bg:#0f1013; --console-fg:#e6e1d6; --console-dim:#7d7a72;
+      color-scheme:dark;
+    }
+  }
+  :root[data-theme="dark"]{
+    --bg:#15161a; --surface:#1d1f24; --surface-alt:#25282e;
+    --ink:#ecebe7; --ink-soft:#a8a69f; --ink-faint:#76746d; --rule:#32353c;
+    --fatal:#e4705e; --warn:#d9a743; --ok:#7fb574; --accent:#e08a53;
+    --console-bg:#0f1013; --console-fg:#e6e1d6; --console-dim:#7d7a72;
+    color-scheme:dark;
+  }
+  *{box-sizing:border-box}
+  html,body{margin:0}
+  body{background:var(--bg);color:var(--ink);font-family:var(--body);font-size:16px;line-height:1.6;-webkit-font-smoothing:antialiased}
+  .wrap{max-width:66rem;margin:0 auto;padding-inline:20px}
+  a{color:var(--accent)}
+
+  header.top{padding-block:3.2rem 2.2rem}
+  .eyebrow{font-family:var(--mono);font-size:.72rem;letter-spacing:.14em;text-transform:uppercase;color:var(--ink-faint);margin:0 0 1.3rem}
+  h1{font-family:var(--display);font-weight:900;font-size:clamp(2.1rem,6.4vw,3.9rem);line-height:1;letter-spacing:-.028em;margin:0 0 1rem;text-wrap:balance}
+  h1 em{font-style:normal;color:var(--fatal)}
+  .deck{font-size:clamp(1.02rem,2.3vw,1.24rem);color:var(--ink-soft);max-width:40ch;margin:0 0 1.9rem;text-wrap:balance}
+  .btnrow{display:flex;flex-wrap:wrap;gap:.8rem 1rem;align-items:center}
+  .btn{display:inline-block;font-family:var(--display);font-weight:700;font-size:.97rem;color:#fbf8f2;background:var(--fatal);padding:.72rem 1.4rem;border-radius:3px;text-decoration:none;transition:filter .14s ease}
+  .btn:hover{filter:brightness(1.1)}
+  .btn.ghost{background:transparent;color:var(--ink);border:1px solid var(--rule)}
+  .note{font-family:var(--mono);font-size:.8rem;color:var(--ink-faint)}
+
+  .console{background:var(--console-bg);border-radius:4px;padding:1.05rem 1.15rem;overflow-x:auto;margin-block:1.6rem}
+  pre{font-family:var(--mono);font-size:.73rem;line-height:1.6;color:var(--console-fg);margin:0;white-space:pre}
+  .dim{color:var(--console-dim)} .f{color:var(--fatal);font-weight:600}
+  .a{color:var(--accent);font-weight:600} .g{color:var(--ok)}
+
+  section{padding-block:2.5rem;border-top:1px solid var(--rule)}
+  h2{font-family:var(--display);font-weight:700;font-size:clamp(1.35rem,3.2vw,1.85rem);letter-spacing:-.016em;margin:0 0 .5rem;text-wrap:balance}
+  .lede{color:var(--ink-soft);max-width:62ch;margin:0 0 1.6rem}
+  p{max-width:64ch}
+
+  .products{display:grid;grid-template-columns:repeat(auto-fit,minmax(min(100%,19rem),1fr));gap:1.2rem}
+  .card{background:var(--surface);border:1px solid var(--rule);border-radius:5px;padding:1.4rem 1.4rem 1.5rem;display:flex;flex-direction:column;gap:.7rem;min-width:0}
+  .card h3{font-family:var(--display);font-weight:700;font-size:1.22rem;margin:0;letter-spacing:-.01em}
+  .card.bundle{border-color:var(--accent)}
+  .card .price{font-family:var(--mono);font-size:.85rem;color:var(--accent);font-weight:600}
+  .card p{font-size:.92rem;color:var(--ink-soft);margin:0;flex:1}
+  .card ul{margin:.1rem 0 0;padding-left:1.1rem;font-size:.88rem;color:var(--ink-soft)}
+  .card ul li{margin-bottom:.3rem}
+  .card .actions{display:flex;flex-wrap:wrap;gap:.6rem;margin-top:.5rem}
+
+  table{border-collapse:collapse;width:100%;font-size:.9rem;margin-top:.4rem}
+  th,td{text-align:left;padding:.5rem .7rem;border-bottom:1px solid var(--rule);vertical-align:top}
+  th{font-family:var(--mono);font-size:.7rem;letter-spacing:.09em;text-transform:uppercase;color:var(--ink-faint);font-weight:500}
+  td code{font-family:var(--mono);font-size:.85em}
+  .tablewrap{overflow-x:auto}
+
+  .limits{list-style:none;padding:0;margin:0;display:grid;gap:.75rem}
+  .limits li{padding-left:1.4rem;position:relative;color:var(--ink-soft);max-width:64ch}
+  .limits li::before{content:"—";position:absolute;left:0;color:var(--ink-faint);font-family:var(--mono)}
+  .limits b{color:var(--ink);font-weight:600}
+
+  footer{border-top:1px solid var(--rule);padding-block:1.8rem 3.2rem;font-family:var(--mono);font-size:.76rem;color:var(--ink-faint)}
+  footer p{max-width:62ch;margin:0 0 .45rem}
+  @media (prefers-reduced-motion:reduce){*{transition:none!important}}
+
+  /* --- /fix/ failure-mode pages ------------------------------------- */
+  .fixpre{background:var(--console-bg);border-radius:6px;padding:14px 16px;
+          overflow-x:auto;margin:14px 0}
+  .fixpre pre{white-space:pre-wrap;word-break:break-word}
+  .fixlist{list-style:none;padding:0;margin:0}
+  .fixlist li{padding:11px 0;border-bottom:1px solid var(--rule);font-size:.95rem}
+  .fixlist li a{font-family:var(--mono);font-size:.85rem;font-weight:500}
+  .muted{color:var(--ink-faint)}
+  .sev{font-family:var(--mono);font-size:.78rem;font-weight:600;
+       letter-spacing:.06em}
+  .sev.fatal{color:var(--fatal)} .sev.warn{color:var(--warn)}
+  .fixbody h2{margin-top:30px}
+  .fixbody p,.fixbody li{color:var(--ink-soft);line-height:1.65}
+  .fixbody ul{padding-left:20px}
+  .fixbody li{margin:6px 0}
+</style>
+</head>
+<body>
+<div class="wrap fixbody">
+
+<header class="top">
+  <p class="eyebrow"><a href="/">Forge Server Tools</a> · <a href="/fix/">every failure mode</a></p>
+  <h1>Mixin apply failed InvalidInjectionException</h1>
+  <p class="deck">A mixin failed to apply — <span class="sev fatal">FATAL</span></p>
+</header>
+
+<section>
+  <h2>What this actually means</h2>
+  <p>A mod patches a Minecraft method at runtime, and the method it expects isn't shaped the way it expects. Almost always: the mod is built for a different Minecraft version, or two mods are patching the same method and one clobbered the other.</p>
+</section>
+
+<section>
+  <h2>How to fix it</h2>
+  <p>Check the failing mod is built for YOUR exact Minecraft version -- not 'close enough'. 1.20.1 and 1.20.4 are not interchangeable. If the version is right, the owner named in the error conflicts with another mod touching the same code; remove one and retest. Performance and rendering mods are the usual pair.</p>
+</section>
+
+<section>
+  <h2>What it looks like in your log</h2>
+  <p>Search your crash report or <code>latest.log</code> for any of these:</p>
+  <div class="fixpre"><pre>org.spongepowered.asm.mixin.  ...  throwables.
+InvalidInjectionException
+Mixin apply failed
+CriticalInjectionException</pre></div>
+  <p>The free edition covers the six most common startup failures, and this
+  is not one of them — it is in the paid tool, which checks all 24 and names the
+  mod jar from the stack trace. The fix above is the same one it prints, so you
+  do not need it to solve this.</p>
+  <div class="btnrow">
+    <a class="btn ghost" href="https://github.com/Jaakoby/forge-server-doctor">Free edition (6 checks)</a>
+    <a class="btn" href="/#tools">All 24 checks</a>
+  </div>
+</section>
+
+<footer>
+  <p>Forge Server Tools — diagnostic aids, not authorities. Verify any diagnosis before acting on it, and keep a backup of your world.</p>
+  <p>Not affiliated with Mojang, Microsoft, MinecraftForge or NeoForged. Minecraft is a trademark of Mojang AB.</p>
+</footer>
+
+</div>
+</body>
+</html>
