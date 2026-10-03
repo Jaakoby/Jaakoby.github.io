@@ -15,6 +15,10 @@ SKIP = {"_style.html", "404.html"}
 
 def urls():
     found = ["%s/" % SITE]
+    # root-level pages other than the homepage
+    for f in sorted(os.listdir(HERE)):
+        if f.endswith(".html") and f not in SKIP and f != "index.html":
+            found.append("%s/%s" % (SITE, f))
     for d in ("fix", "guides"):
         path = os.path.join(HERE, d)
         if not os.path.isdir(path):

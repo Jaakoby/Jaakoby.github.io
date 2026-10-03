@@ -1,0 +1,228 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>An AI wrote these tools. Here is everything it got wrong first.</title>
+<meta name="description" content="Claude wrote the code, I brought thirteen real crash reports from a live 234-mod server. The tests passed 6 of 6 invented cases and then diagnosed 3 of 8 real ones. What the real data corrected.">
+<link rel="canonical" href="https://jaakoby.github.io/how-this-was-built.html">
+<link rel="icon" href="/img/icon.png">
+<meta property="og:type" content="article">
+<meta property="og:title" content="An AI wrote these tools. Here is everything it got wrong first.">
+<meta property="og:description" content="Claude wrote the code, I brought thirteen real crash reports from a live 234-mod server. The tests passed 6 of 6 invented cases and then diagnosed 3 of 8 real ones. What the real data corrected.">
+<meta property="og:url" content="https://jaakoby.github.io/how-this-was-built.html">
+<meta property="og:image" content="https://jaakoby.github.io/img/forge-server-doctor.png">
+<meta name="twitter:card" content="summary_large_image">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Archivo:wght@500;700;900&family=IBM+Plex+Mono:wght@400;500;600&family=IBM+Plex+Sans:wght@400;500;600&display=swap">
+<style>
+  :root{
+    --bg:#f4f2ee; --surface:#fff; --surface-alt:#ebe8e1;
+    --ink:#1c1b19; --ink-soft:#56534d; --ink-faint:#8a867e; --rule:#d9d5cc;
+    --fatal:#a8291b; --warn:#9a6508; --ok:#3f6b3a; --accent:#b4541f;
+    --console-bg:#1b1a18; --console-fg:#e6e1d6; --console-dim:#8f897c;
+    --display:'Archivo','Helvetica Neue',Arial,sans-serif;
+    --body:'IBM Plex Sans',system-ui,-apple-system,sans-serif;
+    --mono:'IBM Plex Mono',ui-monospace,Menlo,monospace;
+    color-scheme:light;
+  }
+  @media (prefers-color-scheme:dark){
+    :root:not([data-theme="light"]){
+      --bg:#15161a; --surface:#1d1f24; --surface-alt:#25282e;
+      --ink:#ecebe7; --ink-soft:#a8a69f; --ink-faint:#76746d; --rule:#32353c;
+      --fatal:#e4705e; --warn:#d9a743; --ok:#7fb574; --accent:#e08a53;
+      --console-bg:#0f1013; --console-fg:#e6e1d6; --console-dim:#7d7a72;
+      color-scheme:dark;
+    }
+  }
+  :root[data-theme="dark"]{
+    --bg:#15161a; --surface:#1d1f24; --surface-alt:#25282e;
+    --ink:#ecebe7; --ink-soft:#a8a69f; --ink-faint:#76746d; --rule:#32353c;
+    --fatal:#e4705e; --warn:#d9a743; --ok:#7fb574; --accent:#e08a53;
+    --console-bg:#0f1013; --console-fg:#e6e1d6; --console-dim:#7d7a72;
+    color-scheme:dark;
+  }
+  *{box-sizing:border-box}
+  html,body{margin:0}
+  body{background:var(--bg);color:var(--ink);font-family:var(--body);font-size:16px;line-height:1.6;-webkit-font-smoothing:antialiased}
+  .wrap{max-width:66rem;margin:0 auto;padding-inline:20px}
+  a{color:var(--accent)}
+
+  header.top{padding-block:3.2rem 2.2rem}
+  .eyebrow{font-family:var(--mono);font-size:.72rem;letter-spacing:.14em;text-transform:uppercase;color:var(--ink-faint);margin:0 0 1.3rem}
+  h1{font-family:var(--display);font-weight:900;font-size:clamp(2.1rem,6.4vw,3.9rem);line-height:1;letter-spacing:-.028em;margin:0 0 1rem;text-wrap:balance}
+  h1 em{font-style:normal;color:var(--fatal)}
+  .deck{font-size:clamp(1.02rem,2.3vw,1.24rem);color:var(--ink-soft);max-width:40ch;margin:0 0 1.9rem;text-wrap:balance}
+  .btnrow{display:flex;flex-wrap:wrap;gap:.8rem 1rem;align-items:center}
+  .btn{display:inline-block;font-family:var(--display);font-weight:700;font-size:.97rem;color:#fbf8f2;background:var(--fatal);padding:.72rem 1.4rem;border-radius:3px;text-decoration:none;transition:filter .14s ease}
+  .btn:hover{filter:brightness(1.1)}
+  .btn.ghost{background:transparent;color:var(--ink);border:1px solid var(--rule)}
+  .note{font-family:var(--mono);font-size:.8rem;color:var(--ink-faint)}
+
+  .console{background:var(--console-bg);border-radius:4px;padding:1.05rem 1.15rem;overflow-x:auto;margin-block:1.6rem}
+  pre{font-family:var(--mono);font-size:.73rem;line-height:1.6;color:var(--console-fg);margin:0;white-space:pre}
+  .dim{color:var(--console-dim)} .f{color:var(--fatal);font-weight:600}
+  .a{color:var(--accent);font-weight:600} .g{color:var(--ok)}
+
+  section{padding-block:2.5rem;border-top:1px solid var(--rule)}
+  h2{font-family:var(--display);font-weight:700;font-size:clamp(1.35rem,3.2vw,1.85rem);letter-spacing:-.016em;margin:0 0 .5rem;text-wrap:balance}
+  .lede{color:var(--ink-soft);max-width:62ch;margin:0 0 1.6rem}
+  p{max-width:64ch}
+
+  .products{display:grid;grid-template-columns:repeat(auto-fit,minmax(min(100%,19rem),1fr));gap:1.2rem}
+  .card{background:var(--surface);border:1px solid var(--rule);border-radius:5px;padding:1.4rem 1.4rem 1.5rem;display:flex;flex-direction:column;gap:.7rem;min-width:0}
+  .card h3{font-family:var(--display);font-weight:700;font-size:1.22rem;margin:0;letter-spacing:-.01em}
+  .card.bundle{border-color:var(--accent)}
+  .card .price{font-family:var(--mono);font-size:.85rem;color:var(--accent);font-weight:600}
+  .card p{font-size:.92rem;color:var(--ink-soft);margin:0;flex:1}
+  .card ul{margin:.1rem 0 0;padding-left:1.1rem;font-size:.88rem;color:var(--ink-soft)}
+  .card ul li{margin-bottom:.3rem}
+  .card .actions{display:flex;flex-wrap:wrap;gap:.6rem;margin-top:.5rem}
+
+  table{border-collapse:collapse;width:100%;font-size:.9rem;margin-top:.4rem}
+  th,td{text-align:left;padding:.5rem .7rem;border-bottom:1px solid var(--rule);vertical-align:top}
+  th{font-family:var(--mono);font-size:.7rem;letter-spacing:.09em;text-transform:uppercase;color:var(--ink-faint);font-weight:500}
+  td code{font-family:var(--mono);font-size:.85em}
+  .tablewrap{overflow-x:auto}
+
+  .limits{list-style:none;padding:0;margin:0;display:grid;gap:.75rem}
+  .limits li{padding-left:1.4rem;position:relative;color:var(--ink-soft);max-width:64ch}
+  .limits li::before{content:"—";position:absolute;left:0;color:var(--ink-faint);font-family:var(--mono)}
+  .limits b{color:var(--ink);font-weight:600}
+
+  footer{border-top:1px solid var(--rule);padding-block:1.8rem 3.2rem;font-family:var(--mono);font-size:.76rem;color:var(--ink-faint)}
+  footer p{max-width:62ch;margin:0 0 .45rem}
+  @media (prefers-reduced-motion:reduce){*{transition:none!important}}
+
+  /* --- /fix/ failure-mode pages ------------------------------------- */
+  .fixpre{background:var(--console-bg);border-radius:6px;padding:14px 16px;
+          overflow-x:auto;margin:14px 0}
+  .fixpre pre{white-space:pre-wrap;word-break:break-word}
+  .fixlist{list-style:none;padding:0;margin:0}
+  .fixlist li{padding:11px 0;border-bottom:1px solid var(--rule);font-size:.95rem}
+  .fixlist li a{font-family:var(--mono);font-size:.85rem;font-weight:500}
+  .muted{color:var(--ink-faint)}
+  .sev{font-family:var(--mono);font-size:.78rem;font-weight:600;
+       letter-spacing:.06em}
+  .sev.fatal{color:var(--fatal)} .sev.warn{color:var(--warn)}
+  .fixbody h2{margin-top:30px}
+  .fixbody p,.fixbody li{color:var(--ink-soft);line-height:1.65}
+  .fixbody ul{padding-left:20px}
+  .fixbody li{margin:6px 0}
+  .fixbody table{border-collapse:collapse;width:100%;margin:16px 0;font-size:.92rem}
+  .fixbody th,.fixbody td{text-align:left;padding:9px 12px;border-bottom:1px solid var(--rule)}
+  .fixbody th{font-family:var(--display);font-size:.78rem;letter-spacing:.06em;
+              text-transform:uppercase;color:var(--ink-faint)}
+  .fixbody h3{margin-top:22px;font-size:1.02rem}
+</style>
+</head>
+<body>
+<div class="wrap fixbody">
+<header class="top">
+  <p class="eyebrow"><a href="/">Forge Server Tools</a> · <a href="/fix/">every failure mode</a> · <a href="/guides/">guides</a></p>
+  <h1>An AI wrote these tools. Here is everything it got wrong first.</h1>
+</header>
+<section>
+<p class="deck">Claude wrote the code. I ran the server that proved it wrong.</p>
+
+<h2>Why say so at all</h2>
+<p>Because it is going to come out — every commit in these repositories is tagged
+<code>Co-Authored-By: Claude</code> — and because the interesting part of this
+project is not the tools. It is the list of things a confident, well-tested AI
+got wrong until it was pointed at a real server.</p>
+<p>If you would rather not buy software an AI wrote, that is a completely
+reasonable position and the source of the free editions is right there to read.
+Everything below is the honest account.</p>
+
+<h2>The division of labour</h2>
+<p>Claude wrote essentially all of the code, the tests and this page. I set the
+goal, made the judgement calls, and — the part that actually mattered —
+supplied thirteen real crash reports and a 234-mod production server to test
+against. That sounds like the small half. It was not.</p>
+
+<h2>Six tests out of six. Three real crashes out of eight.</h2>
+<p>The first version of the crash reader passed every test written for it. Six
+synthetic logs, one per failure mode, each containing exactly the string its
+pattern looked for.</p>
+<p>Pointed at a real <code>crash-reports/</code> folder, it diagnosed <strong>three of
+eight</strong>.</p>
+<p>The same author had written both the question and the answer, so of course they
+matched. The patterns were not wrong so much as <em>narrow</em> — tuned to a tidy
+example of each error rather than the shape those errors take when a real pack
+with 234 mods falls over. Real crashes came wrapped in Forge's own exceptions,
+or as stale-jar <code>NoClassDefFoundError</code>s, or as malformed resource IDs
+that no invented sample contained.</p>
+<p>The fix was not cleverness. It was reading thirteen real crash reports and
+writing rules for what was actually in them. <strong>A green test suite built on
+invented inputs measures the author's imagination, not the code.</strong></p>
+
+<h2>A confident theory that moved the number by 0.00 seconds</h2>
+<p>The tool took 59 seconds on a real <code>debug.log</code>. The obvious culprit
+turned up immediately: a single line of 107,445 characters, a complete HTML page
+that some mod had fetched and logged in full.</p>
+<p>Capping line length changed the runtime from 58.84s to <strong>58.84s</strong>.</p>
+<p>The real cause was catastrophic regex backtracking in an unrelated pattern —
+<code>(?P&lt;mod&gt;\S+).*is client-only</code>, where an unbounded
+<code>\S+</code> followed by <code>.*</code> never returns on a long non-matching
+line. Bounding it took the run to 1.97s.</p>
+<p>The interesting part is not the regex. It is that the first explanation was
+plausible, specific, well-researched and <em>completely wrong</em>, and the only
+reason anyone found out was measuring before and after instead of declaring
+victory.</p>
+
+<h2>Blaming the wrong thing, three times</h2>
+<p>The feature that makes the tool worth anything is naming the mod jar from the
+stack trace. The first version blamed <code>netty-common</code> on about half of all
+crashes, because Netty sits near the top of any network-related trace. Fixed
+that, and it blamed <code>fmlloader</code>. Fixed that, and it blamed
+<code>modlauncher</code>.</p>
+<p>Every one of those was a confident, authoritative-looking wrong answer, and each
+was caught only by running it against reports whose cause was already known.</p>
+
+<h2>169 typos, most of them imaginary</h2>
+<p>The modpack validator's first run on a real pack reported 169 typos. Most were
+noise — it was comparing whole IDs, so a shared namespace contributed fourteen
+identical characters to every comparison before the part that distinguishes them
+was reached. Comparing only the path cut 169 candidates to 63.</p>
+<p>Three of those are real, still live in a pack thousands of people play.</p>
+
+<h2>It named a real person's mod as the thing that broke a server</h2>
+<p>The worst one. The README, the test suite and a published article all used a
+real third-party mod as the example crash culprit — because it genuinely was,
+in one of my logs. It would have shipped to buyers as the illustration of a
+broken mod.</p>
+<p>That is not ours to do. It was caught by a check Claude wrote to scan its own
+output for exactly this, and replaced with an invented mod name everywhere,
+including in the already-published article.</p>
+
+<h2>And it was wrong about its own storefront</h2>
+<p>The automatic check written to watch the products reported that a published,
+paid product had no file attached — that anyone buying it would get a receipt
+and nothing to download. It was about to send me to re-upload a file that was
+already there, twice over. The field it trusted is only populated when a product
+has exactly one plain attachment.</p>
+<p><strong>An empty field is not proof of absence.</strong></p>
+
+<h2>What I take from it</h2>
+<p>Claude is genuinely fast and genuinely good at the writing part. What it could
+not do was know whether any of it was true, and it was confident either way.
+Every single correction above came from contact with a real server, real logs,
+and a real pack — not from more reasoning.</p>
+<p>So: it wrote the code, I brought the reality. Both halves were necessary, and
+the half that found the bugs was not the clever one.</p>
+
+<h2>Read it yourself</h2>
+<p>The free editions are complete, single-file and dependency-free, and every test
+suite ships with them — including the ones that document which earlier version
+was wrong and why.</p>
+
+<div class="btnrow">
+  <a class="btn" href="https://github.com/Jaakoby/forge-server-doctor">forge-server-doctor</a>
+  <a class="btn ghost" href="https://github.com/Jaakoby/pack-doctor">pack-doctor</a>
+  <a class="btn ghost" href="/fix/">All 24 failure modes</a>
+</div></section>
+<footer>
+  <p>Not affiliated with Mojang, Microsoft, MinecraftForge or NeoForged. Minecraft is a trademark of Mojang AB.</p>
+</footer>
+</div>
+</body>
+</html>
