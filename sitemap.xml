@@ -1,29 +1,36 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">
   <url><loc>https://jaakoby.github.io/</loc><lastmod>2026-10-03</lastmod><priority>1.0</priority></url>
-  <url><loc>https://jaakoby.github.io/fix/</loc><lastmod>2026-10-03</lastmod><priority>0.8</priority></url>
+  <url><loc>https://jaakoby.github.io/fix/</loc><lastmod>2026-10-03</lastmod><priority>0.9</priority></url>
+  <url><loc>https://jaakoby.github.io/fix/bad-resource-location.html</loc><lastmod>2026-10-03</lastmod><priority>0.8</priority></url>
   <url><loc>https://jaakoby.github.io/fix/client-class-on-server.html</loc><lastmod>2026-10-03</lastmod><priority>0.8</priority></url>
   <url><loc>https://jaakoby.github.io/fix/client-only-mod.html</loc><lastmod>2026-10-03</lastmod><priority>0.8</priority></url>
-  <url><loc>https://jaakoby.github.io/fix/missing-dependency.html</loc><lastmod>2026-10-03</lastmod><priority>0.8</priority></url>
-  <url><loc>https://jaakoby.github.io/fix/duplicate-mods.html</loc><lastmod>2026-10-03</lastmod><priority>0.8</priority></url>
-  <url><loc>https://jaakoby.github.io/fix/mixin-failure.html</loc><lastmod>2026-10-03</lastmod><priority>0.8</priority></url>
-  <url><loc>https://jaakoby.github.io/fix/world-lock.html</loc><lastmod>2026-10-03</lastmod><priority>0.8</priority></url>
-  <url><loc>https://jaakoby.github.io/fix/java-version.html</loc><lastmod>2026-10-03</lastmod><priority>0.8</priority></url>
-  <url><loc>https://jaakoby.github.io/fix/out-of-memory.html</loc><lastmod>2026-10-03</lastmod><priority>0.8</priority></url>
-  <url><loc>https://jaakoby.github.io/fix/port-in-use.html</loc><lastmod>2026-10-03</lastmod><priority>0.8</priority></url>
-  <url><loc>https://jaakoby.github.io/fix/eula.html</loc><lastmod>2026-10-03</lastmod><priority>0.8</priority></url>
-  <url><loc>https://jaakoby.github.io/fix/static-init.html</loc><lastmod>2026-10-03</lastmod><priority>0.8</priority></url>
-  <url><loc>https://jaakoby.github.io/fix/registry-remap.html</loc><lastmod>2026-10-03</lastmod><priority>0.8</priority></url>
-  <url><loc>https://jaakoby.github.io/fix/loader-version.html</loc><lastmod>2026-10-03</lastmod><priority>0.8</priority></url>
-  <url><loc>https://jaakoby.github.io/fix/watchdog.html</loc><lastmod>2026-10-03</lastmod><priority>0.8</priority></url>
-  <url><loc>https://jaakoby.github.io/fix/nosuchmethod.html</loc><lastmod>2026-10-03</lastmod><priority>0.8</priority></url>
   <url><loc>https://jaakoby.github.io/fix/config-crash.html</loc><lastmod>2026-10-03</lastmod><priority>0.8</priority></url>
-  <url><loc>https://jaakoby.github.io/fix/mod-rejections.html</loc><lastmod>2026-10-03</lastmod><priority>0.8</priority></url>
   <url><loc>https://jaakoby.github.io/fix/datapack-recipe.html</loc><lastmod>2026-10-03</lastmod><priority>0.8</priority></url>
-  <url><loc>https://jaakoby.github.io/fix/own-class-missing.html</loc><lastmod>2026-10-03</lastmod><priority>0.8</priority></url>
-  <url><loc>https://jaakoby.github.io/fix/bad-resource-location.html</loc><lastmod>2026-10-03</lastmod><priority>0.8</priority></url>
-  <url><loc>https://jaakoby.github.io/fix/ticking-entity-mod-bug.html</loc><lastmod>2026-10-03</lastmod><priority>0.8</priority></url>
-  <url><loc>https://jaakoby.github.io/fix/mod-loading-wrapper.html</loc><lastmod>2026-10-03</lastmod><priority>0.8</priority></url>
-  <url><loc>https://jaakoby.github.io/fix/server-init-wrapper.html</loc><lastmod>2026-10-03</lastmod><priority>0.8</priority></url>
+  <url><loc>https://jaakoby.github.io/fix/duplicate-mods.html</loc><lastmod>2026-10-03</lastmod><priority>0.8</priority></url>
+  <url><loc>https://jaakoby.github.io/fix/eula.html</loc><lastmod>2026-10-03</lastmod><priority>0.8</priority></url>
+  <url><loc>https://jaakoby.github.io/fix/java-version.html</loc><lastmod>2026-10-03</lastmod><priority>0.8</priority></url>
+  <url><loc>https://jaakoby.github.io/fix/loader-version.html</loc><lastmod>2026-10-03</lastmod><priority>0.8</priority></url>
+  <url><loc>https://jaakoby.github.io/fix/missing-dependency.html</loc><lastmod>2026-10-03</lastmod><priority>0.8</priority></url>
   <url><loc>https://jaakoby.github.io/fix/missing-mod-file.html</loc><lastmod>2026-10-03</lastmod><priority>0.8</priority></url>
+  <url><loc>https://jaakoby.github.io/fix/mixin-failure.html</loc><lastmod>2026-10-03</lastmod><priority>0.8</priority></url>
+  <url><loc>https://jaakoby.github.io/fix/mod-loading-wrapper.html</loc><lastmod>2026-10-03</lastmod><priority>0.8</priority></url>
+  <url><loc>https://jaakoby.github.io/fix/mod-rejections.html</loc><lastmod>2026-10-03</lastmod><priority>0.8</priority></url>
+  <url><loc>https://jaakoby.github.io/fix/nosuchmethod.html</loc><lastmod>2026-10-03</lastmod><priority>0.8</priority></url>
+  <url><loc>https://jaakoby.github.io/fix/out-of-memory.html</loc><lastmod>2026-10-03</lastmod><priority>0.8</priority></url>
+  <url><loc>https://jaakoby.github.io/fix/own-class-missing.html</loc><lastmod>2026-10-03</lastmod><priority>0.8</priority></url>
+  <url><loc>https://jaakoby.github.io/fix/port-in-use.html</loc><lastmod>2026-10-03</lastmod><priority>0.8</priority></url>
+  <url><loc>https://jaakoby.github.io/fix/registry-remap.html</loc><lastmod>2026-10-03</lastmod><priority>0.8</priority></url>
+  <url><loc>https://jaakoby.github.io/fix/server-init-wrapper.html</loc><lastmod>2026-10-03</lastmod><priority>0.8</priority></url>
+  <url><loc>https://jaakoby.github.io/fix/static-init.html</loc><lastmod>2026-10-03</lastmod><priority>0.8</priority></url>
+  <url><loc>https://jaakoby.github.io/fix/ticking-entity-mod-bug.html</loc><lastmod>2026-10-03</lastmod><priority>0.8</priority></url>
+  <url><loc>https://jaakoby.github.io/fix/watchdog.html</loc><lastmod>2026-10-03</lastmod><priority>0.8</priority></url>
+  <url><loc>https://jaakoby.github.io/fix/world-lock.html</loc><lastmod>2026-10-03</lastmod><priority>0.8</priority></url>
+  <url><loc>https://jaakoby.github.io/guides/</loc><lastmod>2026-10-03</lastmod><priority>0.9</priority></url>
+  <url><loc>https://jaakoby.github.io/guides/how-much-ram-modded-minecraft-server.html</loc><lastmod>2026-10-03</lastmod><priority>0.8</priority></url>
+  <url><loc>https://jaakoby.github.io/guides/how-to-read-a-minecraft-crash-report.html</loc><lastmod>2026-10-03</lastmod><priority>0.8</priority></url>
+  <url><loc>https://jaakoby.github.io/guides/minecraft-server-keeps-restarting.html</loc><lastmod>2026-10-03</lastmod><priority>0.8</priority></url>
+  <url><loc>https://jaakoby.github.io/guides/minecraft-server-wont-start-no-crash-report.html</loc><lastmod>2026-10-03</lastmod><priority>0.8</priority></url>
+  <url><loc>https://jaakoby.github.io/guides/players-kicked-mod-mismatch.html</loc><lastmod>2026-10-03</lastmod><priority>0.8</priority></url>
+  <url><loc>https://jaakoby.github.io/guides/which-mod-is-crashing-my-server.html</loc><lastmod>2026-10-03</lastmod><priority>0.8</priority></url>
 </urlset>

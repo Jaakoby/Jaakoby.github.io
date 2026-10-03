@@ -20,7 +20,6 @@ import html
 import os
 import re
 import sys
-from datetime import date
 
 HERE = os.path.dirname(os.path.abspath(__file__))
 sys.path.insert(0, "/mnt/e/ForgeServerDoctor")
@@ -60,7 +59,8 @@ QUERY = {
 }
 
 NAV = ('<p class="eyebrow"><a href="/">Forge Server Tools</a> · '
-       '<a href="/fix/">every failure mode</a></p>')
+       '<a href="/fix/">every failure mode</a> · '
+       '<a href="/guides/">guides</a></p>')
 
 # The free edition ships only these six. Pages for the other eighteen must NOT
 # imply it will find their problem -- sending someone to a tool that cannot
@@ -260,7 +260,7 @@ def index_page(rules, css):
 <body>
 <div class="wrap">
 <header class="top">
-  <p class="eyebrow"><a href="/">Forge Server Tools</a></p>
+  <p class="eyebrow"><a href="/">Forge Server Tools</a> · <a href="/guides/">guides</a></p>
   <h1>Every way a modded server dies</h1>
   <p class="deck">24 failure modes, each with what it means and the fix. Same
   root causes and remedies the tool prints — find yours below.</p>
@@ -293,19 +293,7 @@ def main():
     with open(os.path.join(OUT, "index.html"), "w", encoding="utf-8") as fh:
         fh.write(index_page(written, css))
 
-    today = date.today().isoformat()
-    urls = ["%s/" % SITE, "%s/fix/" % SITE] + \
-           ["%s/fix/%s.html" % (SITE, r.id) for r in written]
-    with open(os.path.join(HERE, "sitemap.xml"), "w", encoding="utf-8") as fh:
-        fh.write('<?xml version="1.0" encoding="UTF-8"?>\n'
-                 '<urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">\n')
-        for u in urls:
-            pri = "1.0" if u.endswith("io/") else "0.8"
-            fh.write("  <url><loc>%s</loc><lastmod>%s</lastmod>"
-                     "<priority>%s</priority></url>\n" % (u, today, pri))
-        fh.write("</urlset>\n")
-
-    print("%d pages + index, %d sitemap urls" % (len(written), len(urls)))
+    print("%d pages + index (sitemap: run build_sitemap.py)" % len(written))
 
 
 if __name__ == "__main__":

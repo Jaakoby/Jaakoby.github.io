@@ -3,17 +3,16 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
-<title>Mixin apply failed InvalidInjectionException — what it means and how to fix it</title>
-<meta name="description" content="A mod patches a Minecraft method at runtime, and the method it expects isn't shaped the way it expects. Almost always: the mod is built for a different Min">
-<link rel="canonical" href="https://jaakoby.github.io/fix/mixin-failure.html">
+<title>How to find which mod is crashing your Minecraft server</title>
+<meta name="description" content="Forge stamps every stack frame with the jar it came from. Read the trace, skip the vanilla frames, and the first mod jar left is almost always the culprit.">
+<link rel="canonical" href="https://jaakoby.github.io/guides/which-mod-is-crashing-my-server.html">
 <link rel="icon" href="/img/icon.png">
 <meta property="og:type" content="article">
-<meta property="og:title" content="Mixin apply failed InvalidInjectionException">
-<meta property="og:description" content="A mod patches a Minecraft method at runtime, and the method it expects isn't shaped the way it expects. Almost always: the mod is built for a different Min">
-<meta property="og:url" content="https://jaakoby.github.io/fix/mixin-failure.html">
+<meta property="og:title" content="How to find which mod is crashing your Minecraft server">
+<meta property="og:description" content="Forge stamps every stack frame with the jar it came from. Read the trace, skip the vanilla frames, and the first mod jar left is almost always the culprit.">
+<meta property="og:url" content="https://jaakoby.github.io/guides/which-mod-is-crashing-my-server.html">
 <meta property="og:image" content="https://jaakoby.github.io/img/forge-server-doctor.png">
 <meta name="twitter:card" content="summary_large_image">
-<script type="application/ld+json">{"@context":"https://schema.org","@type":"FAQPage","mainEntity":[{"@type":"Question","name":"Mixin apply failed InvalidInjectionException","acceptedAnswer":{"@type":"Answer","text":"A mod patches a Minecraft method at runtime, and the method it expects isn't shaped the way it expects. Almost always: the mod is built for a different Minecraft version, or two mods are patching the same method and one clobbered the other. Check the failing mod is built for YOUR exact Minecraft version -- not 'close enough'. 1.20.1 and 1.20.4 are not interchangeable. If the version is right, the owner named in the error conflicts with another mod touching the same code; remove one and retest. Performance and rendering mods are the usual pair."}}]}</script>
 <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Archivo:wght@500;700;900&family=IBM+Plex+Mono:wght@400;500;600&family=IBM+Plex+Sans:wght@400;500;600&display=swap">
 <style>
   :root{
@@ -118,45 +117,72 @@
 </head>
 <body>
 <div class="wrap fixbody">
-
 <header class="top">
   <p class="eyebrow"><a href="/">Forge Server Tools</a> · <a href="/fix/">every failure mode</a> · <a href="/guides/">guides</a></p>
-  <h1>Mixin apply failed InvalidInjectionException</h1>
-  <p class="deck">A mixin failed to apply — <span class="sev fatal">FATAL</span></p>
+  <h1>How to find which mod is crashing your Minecraft server</h1>
+  <p class="deck">Forge stamps every stack frame with the jar it came from. Read the trace, skip the vanilla frames, and the first mod jar left is almost always the culprit.</p>
 </header>
-
 <section>
-  <h2>What this actually means</h2>
-  <p>A mod patches a Minecraft method at runtime, and the method it expects isn't shaped the way it expects. Almost always: the mod is built for a different Minecraft version, or two mods are patching the same method and one clobbered the other.</p>
+<h2>The short answer</h2>
+<p>Forge annotates <strong>every stack frame with the jar it came from</strong>. Almost
+nobody outside mod development knows this, and it turns a 400-line trace into a
+one-line answer.</p>
+<div class="fixpre"><pre>at com.example.wildlife.procedures.StalkerProcedure.execute
+   (StalkerProcedure.java:250) ~[examplemod-1.20.1-2.1.11.jar%23205!/:?]</pre></div>
+<p>That <code>~[examplemod-1.20.1-2.1.11.jar...]</code> is the mod. Not the package
+name — the actual file sitting in your <code>mods/</code> folder.</p>
+
+<h2>The procedure</h2>
+<p>Open the newest file in <code>crash-reports/</code>. Read the stack trace from the
+top down, and find the first frame whose jar is <em>not</em> one of these:</p>
+<ul>
+  <li><code>server-*.jar</code>, <code>client-*.jar</code>, anything <code>minecraft</code></li>
+  <li><code>forge-*</code>, <code>neoforge-*</code>, <code>fmlcore</code>, <code>fmlloader</code>,
+      <code>javafmllanguage</code>, <code>modlauncher</code>, <code>securejarhandler</code>,
+      <code>bootstraplauncher</code></li>
+  <li><code>mixin</code>, <code>asm</code>, <code>netty-*</code>, <code>guava</code>,
+      <code>gson</code>, <code>log4j</code></li>
+  <li>any frame with no <code>~[...]</code> annotation at all — that is the JDK</li>
+</ul>
+<p>The first jar left over is your answer.</p>
+
+<h2>Why the skip list is the whole trick</h2>
+<p>This is the part that goes wrong. A naive version of this blames
+<code>netty-common</code> on roughly half of all crashes, because Netty sits near the
+top of any network-related trace. Filter Netty out and it starts blaming
+<code>fmlloader</code>. Filter that and it blames <code>modlauncher</code>.</p>
+<p>Every one of those is a confident, authoritative-looking wrong answer. <strong>If
+something tells you a Forge internal killed your server, it is wrong.</strong> Forge
+is in every trace; being present is not being responsible.</p>
+
+<h2>Always read <code>Caused by:</code> first</h2>
+<p>Forge wraps failures in its own exceptions. A report opening with
+<code>java.lang.Exception: Mod Loading has failed</code> tells you nothing at all.
+Scroll to the <em>last</em> <code>Caused by:</code> and start there. The same goes for
+<code>Failed to initialize server</code> and <code>Exception in server tick loop</code> —
+all three are envelopes, not causes.</p>
+
+<h2>When there is no stack trace</h2>
+<p>If the process vanished with no crash report, nothing crashed in Java — it was
+killed from outside. That is almost always the OS out-of-memory killer or your
+host's watchdog. Check <a href="/fix/out-of-memory.html">heap size</a> first.</p>
 </section>
 
 <section>
-  <h2>How to fix it</h2>
-  <p>Check the failing mod is built for YOUR exact Minecraft version -- not 'close enough'. 1.20.1 and 1.20.4 are not interchangeable. If the version is right, the owner named in the error conflicts with another mod touching the same code; remove one and retest. Performance and rendering mods are the usual pair.</p>
-</section>
-
-<section>
-  <h2>What it looks like in your log</h2>
-  <p>Search your crash report or <code>latest.log</code> for any of these:</p>
-  <div class="fixpre"><pre>org.spongepowered.asm.mixin.  ...  throwables.
-InvalidInjectionException
-Mixin apply failed
-CriticalInjectionException</pre></div>
-  <p>The free edition covers the six most common startup failures, and this
-  is not one of them — it is in the paid tool, which checks all 24 and names the
-  mod jar from the stack trace. The fix above is the same one it prints, so you
-  do not need it to solve this.</p>
+  <h2>Doing this automatically</h2>
+  <p>Forge Server Doctor performs the whole procedure above — reads the report,
+  finds the real cause under the wrappers, skips the vanilla frames, and names
+  the mod jar. 24 failure modes, each with its fix. The free edition covers the
+  six most common startup failures.</p>
   <div class="btnrow">
-    <a class="btn ghost" href="https://github.com/Jaakoby/forge-server-doctor">Free edition (6 checks)</a>
-    <a class="btn" href="/#tools">All 24 checks</a>
+    <a class="btn" href="https://github.com/Jaakoby/forge-server-doctor">Free edition on GitHub</a>
+    <a class="btn ghost" href="/#tools">All 24 checks</a>
   </div>
 </section>
-
 <footer>
   <p>Forge Server Tools — diagnostic aids, not authorities. Verify any diagnosis before acting on it, and keep a backup of your world.</p>
   <p>Not affiliated with Mojang, Microsoft, MinecraftForge or NeoForged. Minecraft is a trademark of Mojang AB.</p>
 </footer>
-
 </div>
 </body>
 </html>

@@ -3,17 +3,16 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
-<title>Mixin apply failed InvalidInjectionException — what it means and how to fix it</title>
-<meta name="description" content="A mod patches a Minecraft method at runtime, and the method it expects isn't shaped the way it expects. Almost always: the mod is built for a different Min">
-<link rel="canonical" href="https://jaakoby.github.io/fix/mixin-failure.html">
+<title>How much RAM a modded Minecraft server actually needs</title>
+<meta name="description" content="Realistic heap figures by mod count, why giving the JVM all your memory backfires, and how to tell a too-small heap from a genuine memory leak.">
+<link rel="canonical" href="https://jaakoby.github.io/guides/how-much-ram-modded-minecraft-server.html">
 <link rel="icon" href="/img/icon.png">
 <meta property="og:type" content="article">
-<meta property="og:title" content="Mixin apply failed InvalidInjectionException">
-<meta property="og:description" content="A mod patches a Minecraft method at runtime, and the method it expects isn't shaped the way it expects. Almost always: the mod is built for a different Min">
-<meta property="og:url" content="https://jaakoby.github.io/fix/mixin-failure.html">
+<meta property="og:title" content="How much RAM a modded Minecraft server actually needs">
+<meta property="og:description" content="Realistic heap figures by mod count, why giving the JVM all your memory backfires, and how to tell a too-small heap from a genuine memory leak.">
+<meta property="og:url" content="https://jaakoby.github.io/guides/how-much-ram-modded-minecraft-server.html">
 <meta property="og:image" content="https://jaakoby.github.io/img/forge-server-doctor.png">
 <meta name="twitter:card" content="summary_large_image">
-<script type="application/ld+json">{"@context":"https://schema.org","@type":"FAQPage","mainEntity":[{"@type":"Question","name":"Mixin apply failed InvalidInjectionException","acceptedAnswer":{"@type":"Answer","text":"A mod patches a Minecraft method at runtime, and the method it expects isn't shaped the way it expects. Almost always: the mod is built for a different Minecraft version, or two mods are patching the same method and one clobbered the other. Check the failing mod is built for YOUR exact Minecraft version -- not 'close enough'. 1.20.1 and 1.20.4 are not interchangeable. If the version is right, the owner named in the error conflicts with another mod touching the same code; remove one and retest. Performance and rendering mods are the usual pair."}}]}</script>
 <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Archivo:wght@500;700;900&family=IBM+Plex+Mono:wght@400;500;600&family=IBM+Plex+Sans:wght@400;500;600&display=swap">
 <style>
   :root{
@@ -118,45 +117,70 @@
 </head>
 <body>
 <div class="wrap fixbody">
-
 <header class="top">
   <p class="eyebrow"><a href="/">Forge Server Tools</a> · <a href="/fix/">every failure mode</a> · <a href="/guides/">guides</a></p>
-  <h1>Mixin apply failed InvalidInjectionException</h1>
-  <p class="deck">A mixin failed to apply — <span class="sev fatal">FATAL</span></p>
+  <h1>How much RAM a modded Minecraft server actually needs</h1>
+  <p class="deck">Realistic heap figures by mod count, why giving the JVM all your memory backfires, and how to tell a too-small heap from a genuine memory leak.</p>
 </header>
-
 <section>
-  <h2>What this actually means</h2>
-  <p>A mod patches a Minecraft method at runtime, and the method it expects isn't shaped the way it expects. Almost always: the mod is built for a different Minecraft version, or two mods are patching the same method and one clobbered the other.</p>
+<h2>Realistic figures</h2>
+<table>
+<tr><th>Pack size</th><th>Heap (<code>-Xmx</code>)</th></tr>
+<tr><td>Vanilla / light (under 50 mods)</td><td>2–4 GB</td></tr>
+<tr><td>Around 100 mods</td><td>6 GB</td></tr>
+<tr><td>200+ mods</td><td>8–10 GB</td></tr>
+<tr><td>Large kitchen-sink packs, several players</td><td>10–12 GB</td></tr>
+</table>
+<p>These are heap, not machine memory. The machine needs meaningfully more.</p>
+
+<h2>Never give the JVM everything</h2>
+<p>The single most common mistake: a 8 GB box with <code>-Xmx8G</code>. The JVM needs
+memory <em>outside</em> the heap — metaspace, thread stacks, direct buffers, the
+JIT's own code cache — and the operating system needs some to function.</p>
+<p>When it runs out, the kernel kills the entire process. You get no crash report,
+no exception, just a log that stops mid-sentence. See
+<a href="/guides/minecraft-server-wont-start-no-crash-report.html">no crash report</a>.</p>
+<p><strong>Cap <code>-Xmx</code> at roughly 75% of physical RAM.</strong></p>
+
+<h2>Set <code>-Xms</code> equal to <code>-Xmx</code></h2>
+<p>Letting the heap grow gradually causes a class of GC stall during world
+generation. Setting them equal avoids it — and has the useful side effect of
+failing immediately if the value is impossible, rather than an hour in.</p>
+
+<h2>More RAM is not always the fix</h2>
+<p>This is the part worth internalising. If raising the heap only <em>delays</em> the
+crash, you do not have a size problem — you have a leak, and more memory buys
+proportionally more time before the same ending.</p>
+<p>How to tell them apart:</p>
+<ul>
+  <li><strong>Too small:</strong> dies under predictable load — a big base, many chunks
+      loading, several players. Raising it fixes it permanently.</li>
+  <li><strong>A leak:</strong> survives a restart, then dies again, at a shorter interval
+      each time. Suspect anything holding entity or chunk references — mob mods,
+      chunk loaders, backpacks, anything with a "nearby entities" scan.</li>
+  <li><strong>A worldgen spike:</strong> dies at the same place every time, with plenty of
+      headroom otherwise. Check what loaded just before.</li>
+</ul>
+<p>Watch heap usage across <em>hours</em>, not minutes. A leak is invisible on any
+shorter scale.</p>
+<p>See also <a href="/fix/out-of-memory.html">java.lang.OutOfMemoryError</a>.</p>
 </section>
 
 <section>
-  <h2>How to fix it</h2>
-  <p>Check the failing mod is built for YOUR exact Minecraft version -- not 'close enough'. 1.20.1 and 1.20.4 are not interchangeable. If the version is right, the owner named in the error conflicts with another mod touching the same code; remove one and retest. Performance and rendering mods are the usual pair.</p>
-</section>
-
-<section>
-  <h2>What it looks like in your log</h2>
-  <p>Search your crash report or <code>latest.log</code> for any of these:</p>
-  <div class="fixpre"><pre>org.spongepowered.asm.mixin.  ...  throwables.
-InvalidInjectionException
-Mixin apply failed
-CriticalInjectionException</pre></div>
-  <p>The free edition covers the six most common startup failures, and this
-  is not one of them — it is in the paid tool, which checks all 24 and names the
-  mod jar from the stack trace. The fix above is the same one it prints, so you
-  do not need it to solve this.</p>
+  <h2>Doing this automatically</h2>
+  <p>Forge Server Doctor performs the whole procedure above — reads the report,
+  finds the real cause under the wrappers, skips the vanilla frames, and names
+  the mod jar. 24 failure modes, each with its fix. The free edition covers the
+  six most common startup failures.</p>
   <div class="btnrow">
-    <a class="btn ghost" href="https://github.com/Jaakoby/forge-server-doctor">Free edition (6 checks)</a>
-    <a class="btn" href="/#tools">All 24 checks</a>
+    <a class="btn" href="https://github.com/Jaakoby/forge-server-doctor">Free edition on GitHub</a>
+    <a class="btn ghost" href="/#tools">All 24 checks</a>
   </div>
 </section>
-
 <footer>
   <p>Forge Server Tools — diagnostic aids, not authorities. Verify any diagnosis before acting on it, and keep a backup of your world.</p>
   <p>Not affiliated with Mojang, Microsoft, MinecraftForge or NeoForged. Minecraft is a trademark of Mojang AB.</p>
 </footer>
-
 </div>
 </body>
 </html>

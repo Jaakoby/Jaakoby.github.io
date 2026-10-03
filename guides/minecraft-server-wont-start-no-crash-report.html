@@ -3,17 +3,16 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
-<title>Mixin apply failed InvalidInjectionException — what it means and how to fix it</title>
-<meta name="description" content="A mod patches a Minecraft method at runtime, and the method it expects isn't shaped the way it expects. Almost always: the mod is built for a different Min">
-<link rel="canonical" href="https://jaakoby.github.io/fix/mixin-failure.html">
+<title>Modded Minecraft server won't start and there is no crash report</title>
+<meta name="description" content="No crash report means nothing crashed in Java. The process was killed from outside, or it never got far enough to write one. Where to look instead.">
+<link rel="canonical" href="https://jaakoby.github.io/guides/minecraft-server-wont-start-no-crash-report.html">
 <link rel="icon" href="/img/icon.png">
 <meta property="og:type" content="article">
-<meta property="og:title" content="Mixin apply failed InvalidInjectionException">
-<meta property="og:description" content="A mod patches a Minecraft method at runtime, and the method it expects isn't shaped the way it expects. Almost always: the mod is built for a different Min">
-<meta property="og:url" content="https://jaakoby.github.io/fix/mixin-failure.html">
+<meta property="og:title" content="Modded Minecraft server won't start and there is no crash report">
+<meta property="og:description" content="No crash report means nothing crashed in Java. The process was killed from outside, or it never got far enough to write one. Where to look instead.">
+<meta property="og:url" content="https://jaakoby.github.io/guides/minecraft-server-wont-start-no-crash-report.html">
 <meta property="og:image" content="https://jaakoby.github.io/img/forge-server-doctor.png">
 <meta name="twitter:card" content="summary_large_image">
-<script type="application/ld+json">{"@context":"https://schema.org","@type":"FAQPage","mainEntity":[{"@type":"Question","name":"Mixin apply failed InvalidInjectionException","acceptedAnswer":{"@type":"Answer","text":"A mod patches a Minecraft method at runtime, and the method it expects isn't shaped the way it expects. Almost always: the mod is built for a different Minecraft version, or two mods are patching the same method and one clobbered the other. Check the failing mod is built for YOUR exact Minecraft version -- not 'close enough'. 1.20.1 and 1.20.4 are not interchangeable. If the version is right, the owner named in the error conflicts with another mod touching the same code; remove one and retest. Performance and rendering mods are the usual pair."}}]}</script>
 <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Archivo:wght@500;700;900&family=IBM+Plex+Mono:wght@400;500;600&family=IBM+Plex+Sans:wght@400;500;600&display=swap">
 <style>
   :root{
@@ -118,45 +117,67 @@
 </head>
 <body>
 <div class="wrap fixbody">
-
 <header class="top">
   <p class="eyebrow"><a href="/">Forge Server Tools</a> · <a href="/fix/">every failure mode</a> · <a href="/guides/">guides</a></p>
-  <h1>Mixin apply failed InvalidInjectionException</h1>
-  <p class="deck">A mixin failed to apply — <span class="sev fatal">FATAL</span></p>
+  <h1>Modded Minecraft server won't start and there is no crash report</h1>
+  <p class="deck">No crash report means nothing crashed in Java. The process was killed from outside, or it never got far enough to write one. Where to look instead.</p>
 </header>
-
 <section>
-  <h2>What this actually means</h2>
-  <p>A mod patches a Minecraft method at runtime, and the method it expects isn't shaped the way it expects. Almost always: the mod is built for a different Minecraft version, or two mods are patching the same method and one clobbered the other.</p>
+<h2>No crash report is itself the diagnosis</h2>
+<p>Minecraft writes a crash report when Java throws something it cannot recover
+from. If there is no file in <code>crash-reports/</code>, one of three things
+happened, and they are easy to tell apart.</p>
+
+<h2>1. The OS killed the process</h2>
+<p>The most common cause on a rented box. You asked for more heap than the machine
+has, so the kernel killed the whole JVM — which cannot write a crash report
+because it no longer exists.</p>
+<p>Symptoms: the log simply stops mid-line. No exception, no "Stopping server".</p>
+<p>Fix: lower <code>-Xmx</code> to about 75% of the machine's real RAM. The JVM needs
+memory outside the heap, and your host needs some too. On Linux, confirm it with
+<code>dmesg | grep -i kill</code>.</p>
+
+<h2>2. It failed before the game loaded</h2>
+<p>Forge can fail during mod discovery, before the crash-report machinery exists.
+Then the answer is in <code>logs/latest.log</code> or <code>logs/debug.log</code>, not in
+<code>crash-reports/</code>.</p>
+<p>Look for the first <code>ERROR</code> or <code>FATAL</code> line in the file, not the last.
+<strong>Causes precede effects</strong>, and one early failure produces a cascade of
+noise behind it. The last error is usually a symptom of the first.</p>
+<p>Common at this stage:
+<a href="/fix/missing-dependency.html">missing dependencies</a>,
+<a href="/fix/duplicate-mods.html">duplicate jars</a>,
+<a href="/fix/java-version.html">the wrong Java version</a> and
+<a href="/fix/missing-mod-file.html">a non-mod jar in mods/</a>.</p>
+
+<h2>3. A native crash</h2>
+<p>If you find an <code>hs_err_pid*.log</code> next to the server jar, the JVM itself
+died — usually a graphics driver or a native library. There is no Java trace to
+read. That file names the failing library.</p>
+
+<h2>Still nothing?</h2>
+<p>Check the obvious ones before going deeper:
+<a href="/fix/eula.html">the EULA</a>,
+<a href="/fix/port-in-use.html">the port being taken</a>, and
+<a href="/fix/world-lock.html">a second server already holding the world</a>.
+Each produces a clear message and no crash report.</p>
 </section>
 
 <section>
-  <h2>How to fix it</h2>
-  <p>Check the failing mod is built for YOUR exact Minecraft version -- not 'close enough'. 1.20.1 and 1.20.4 are not interchangeable. If the version is right, the owner named in the error conflicts with another mod touching the same code; remove one and retest. Performance and rendering mods are the usual pair.</p>
-</section>
-
-<section>
-  <h2>What it looks like in your log</h2>
-  <p>Search your crash report or <code>latest.log</code> for any of these:</p>
-  <div class="fixpre"><pre>org.spongepowered.asm.mixin.  ...  throwables.
-InvalidInjectionException
-Mixin apply failed
-CriticalInjectionException</pre></div>
-  <p>The free edition covers the six most common startup failures, and this
-  is not one of them — it is in the paid tool, which checks all 24 and names the
-  mod jar from the stack trace. The fix above is the same one it prints, so you
-  do not need it to solve this.</p>
+  <h2>Doing this automatically</h2>
+  <p>Forge Server Doctor performs the whole procedure above — reads the report,
+  finds the real cause under the wrappers, skips the vanilla frames, and names
+  the mod jar. 24 failure modes, each with its fix. The free edition covers the
+  six most common startup failures.</p>
   <div class="btnrow">
-    <a class="btn ghost" href="https://github.com/Jaakoby/forge-server-doctor">Free edition (6 checks)</a>
-    <a class="btn" href="/#tools">All 24 checks</a>
+    <a class="btn" href="https://github.com/Jaakoby/forge-server-doctor">Free edition on GitHub</a>
+    <a class="btn ghost" href="/#tools">All 24 checks</a>
   </div>
 </section>
-
 <footer>
   <p>Forge Server Tools — diagnostic aids, not authorities. Verify any diagnosis before acting on it, and keep a backup of your world.</p>
   <p>Not affiliated with Mojang, Microsoft, MinecraftForge or NeoForged. Minecraft is a trademark of Mojang AB.</p>
 </footer>
-
 </div>
 </body>
 </html>
