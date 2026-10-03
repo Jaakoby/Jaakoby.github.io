@@ -136,6 +136,21 @@
 </section>
 
 <section>
+  <h2>How to be sure it is this</h2>
+  <p>Check the mod page: if it lists 'client' as its only environment, this is it. Shader loaders, minimaps, zoom, HUD tweaks, animation and sound mods are the usual ones.</p>
+</section>
+
+<section>
+  <h2>What it gets mistaken for</h2>
+  <p>Players then get <a href="/fix/mod-rejections.html">kicked for a mod mismatch</a>, which tempts people to put it back on the server. Do not — mark it client-side in the pack instead.</p>
+</section>
+
+<section>
+  <h2>What to do next</h2>
+  <p>Audit the whole folder at once rather than one crash at a time. Most packs ship a client-only list, and server hosts frequently copy the client mods folder wholesale, which produces a queue of these.</p>
+</section>
+
+<section>
   <h2>What it looks like in your log</h2>
   <p>Search your crash report or <code>latest.log</code> for any of these:</p>
   <div class="fixpre"><pre>has been loaded on the

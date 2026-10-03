@@ -136,6 +136,21 @@
 </section>
 
 <section>
+  <h2>How to be sure it is this</h2>
+  <p>The message quotes the offending string. Look for capitals, spaces, or a second colon.</p>
+</section>
+
+<section>
+  <h2>What it gets mistaken for</h2>
+  <p>Blamed on a mod when it almost always comes from a config file or datapack somebody edited by hand.</p>
+</section>
+
+<section>
+  <h2>What to do next</h2>
+  <p>Ids are lowercase <code>namespace:path</code>, with only <code>a-z 0-9 _ . - /</code> in the path. Grep your configs for the quoted string.</p>
+</section>
+
+<section>
   <h2>What it looks like in your log</h2>
   <p>Search your crash report or <code>latest.log</code> for any of these:</p>
   <div class="fixpre"><pre>ResourceLocationException: Non  ...  a-z0-9/._-  ...  character in path of location:

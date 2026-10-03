@@ -136,6 +136,21 @@
 </section>
 
 <section>
+  <h2>How to be sure it is this</h2>
+  <p>The frame directly above the error names the class. Its mod is the one to look at, and the cause is usually a config value it read at load.</p>
+</section>
+
+<section>
+  <h2>What it gets mistaken for</h2>
+  <p>Reads like a crash in the mod's logic, but it fires before any of that runs — the class never finished loading.</p>
+</section>
+
+<section>
+  <h2>What to do next</h2>
+  <p>Back up, then delete that mod's config to regenerate defaults. If it still fails, the jar may be wrong for your Minecraft version.</p>
+</section>
+
+<section>
   <h2>What it looks like in your log</h2>
   <p>Search your crash report or <code>latest.log</code> for any of these:</p>
   <div class="fixpre"><pre>java.lang.ExceptionInInitializerError

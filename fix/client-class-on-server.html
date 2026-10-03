@@ -136,6 +136,21 @@
 </section>
 
 <section>
+  <h2>How to be sure it is this</h2>
+  <p>Search the log for <code>DEDICATED_SERVER</code>. The class named just before it will be under <code>net.minecraft.client</code>, or a mod package containing <code>client</code>, <code>render</code>, <code>gui</code> or <code>screen</code>. If the named class is not client-related, this is not your failure.</p>
+</section>
+
+<section>
+  <h2>What it gets mistaken for</h2>
+  <p>Looks almost identical to a <a href="/fix/own-class-missing.html">stale or partial jar</a>, which also throws <code>NoClassDefFoundError</code>. The difference is which class is missing: a vanilla client class means this; a class from the mod's own package means a bad download.</p>
+</section>
+
+<section>
+  <h2>What to do next</h2>
+  <p>If removing the mod is not acceptable, check whether it publishes a separate server build, and whether the pack marks it client-side. Report it upstream with the stack trace — the author's fix is usually a one-line <code>@OnlyIn(Dist.CLIENT)</code> guard, and they cannot fix what they have not seen.</p>
+</section>
+
+<section>
   <h2>What it looks like in your log</h2>
   <p>Search your crash report or <code>latest.log</code> for any of these:</p>
   <div class="fixpre"><pre>Attempted to load class  ...  for invalid dist DEDICATED_SERVER

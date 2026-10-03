@@ -136,6 +136,21 @@
 </section>
 
 <section>
+  <h2>How to be sure it is this</h2>
+  <p>The log states the dependency and the version range it wants. If what you have is inside that range, the dependency is not the problem.</p>
+</section>
+
+<section>
+  <h2>What it gets mistaken for</h2>
+  <p>A library that is too NEW fails identically to one that is missing. <code>[4.2.0,4.3.0)</code> excludes 4.3.0, so installing the newest release can cause the very error you are trying to fix.</p>
+</section>
+
+<section>
+  <h2>What to do next</h2>
+  <p>Install exactly what the range asks for. If two mods demand incompatible versions of the same library, one of them has to go — there is no configuration that resolves it.</p>
+</section>
+
+<section>
   <h2>What it looks like in your log</h2>
   <p>Search your crash report or <code>latest.log</code> for any of these:</p>
   <div class="fixpre"><pre>requires

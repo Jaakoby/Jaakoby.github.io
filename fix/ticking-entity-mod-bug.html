@@ -136,6 +136,21 @@
 </section>
 
 <section>
+  <h2>How to be sure it is this</h2>
+  <p>The crash report's <code>-- Entity being ticked --</code> section names the entity and gives exact coordinates.</p>
+</section>
+
+<section>
+  <h2>What it gets mistaken for</h2>
+  <p>Looks random, because it only fires when that chunk loads. It will recur the moment someone goes back.</p>
+</section>
+
+<section>
+  <h2>What to do next</h2>
+  <p>The thing is still in the world, so the server will die again on restart — this is the classic <a href="/guides/minecraft-server-keeps-restarting.html">restart loop</a>. Remove it at those coordinates, or disable that mob in the mod's config.</p>
+</section>
+
+<section>
   <h2>What it looks like in your log</h2>
   <p>Search your crash report or <code>latest.log</code> for any of these:</p>
   <div class="fixpre"><pre>Description:

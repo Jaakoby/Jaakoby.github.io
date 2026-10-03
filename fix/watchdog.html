@@ -136,6 +136,21 @@
 </section>
 
 <section>
+  <h2>How to be sure it is this</h2>
+  <p>The watchdog dumps the stack of the thread that was stuck. That trace is a real diagnosis, not a symptom — read it the way you would any crash.</p>
+</section>
+
+<section>
+  <h2>What it gets mistaken for</h2>
+  <p>Treated as a performance problem, so people raise the limit. The limit is not what broke.</p>
+</section>
+
+<section>
+  <h2>What to do next</h2>
+  <p>Fix the mod the trace names. Raising <code>max-tick-time</code> hides it; setting it to <code>-1</code> turns a crash into a server nobody can even disconnect from. See <a href="/guides/cant-keep-up-is-the-server-overloaded.html">lag vs. a real stall</a>.</p>
+</section>
+
+<section>
   <h2>What it looks like in your log</h2>
   <p>Search your crash report or <code>latest.log</code> for any of these:</p>
   <div class="fixpre"><pre>A single server tick took  ...  seconds

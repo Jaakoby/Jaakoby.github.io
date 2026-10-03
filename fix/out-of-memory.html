@@ -136,6 +136,21 @@
 </section>
 
 <section>
+  <h2>How to be sure it is this</h2>
+  <p>Confirm the heap the server actually got, not what you intended. The crash report's System Details lists it.</p>
+</section>
+
+<section>
+  <h2>What it gets mistaken for</h2>
+  <p>An OS kill is not this. If the log simply stops with no exception and no crash report, the kernel killed the process — <a href="/guides/minecraft-server-wont-start-no-crash-report.html">different problem, opposite fix</a>: lower <code>-Xmx</code>, not raise it.</p>
+</section>
+
+<section>
+  <h2>What to do next</h2>
+  <p>If more heap only delays it, you have a leak. See <a href="/guides/how-much-ram-modded-minecraft-server.html">how much RAM</a> for telling the two apart.</p>
+</section>
+
+<section>
   <h2>What it looks like in your log</h2>
   <p>Search your crash report or <code>latest.log</code> for any of these:</p>
   <div class="fixpre"><pre>java.lang.OutOfMemoryError:

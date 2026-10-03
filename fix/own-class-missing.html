@@ -136,6 +136,21 @@
 </section>
 
 <section>
+  <h2>How to be sure it is this</h2>
+  <p>The missing class is in the SAME package as the code asking for it. That means the jar is incomplete, not that a dependency is absent.</p>
+</section>
+
+<section>
+  <h2>What it gets mistaken for</h2>
+  <p>Looks like a missing dependency. Compare the package names — a dependency failure names someone else's class.</p>
+</section>
+
+<section>
+  <h2>What to do next</h2>
+  <p>Redownload the jar and compare its size against the source. Interrupted downloads are the usual cause, and hosting-panel uploads are a close second.</p>
+</section>
+
+<section>
   <h2>What it looks like in your log</h2>
   <p>Search your crash report or <code>latest.log</code> for any of these:</p>
   <div class="fixpre"><pre>NoClassDefFoundError:

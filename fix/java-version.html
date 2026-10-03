@@ -136,6 +136,21 @@
 </section>
 
 <section>
+  <h2>How to be sure it is this</h2>
+  <p><code>java -version</code> on the machine, and check what your start script actually invokes — they are often different.</p>
+</section>
+
+<section>
+  <h2>What it gets mistaken for</h2>
+  <p>Having the right Java installed is not the same as using it. Panels and scripts frequently pin an older JDK while the system default is current.</p>
+</section>
+
+<section>
+  <h2>What to do next</h2>
+  <p>Class file 52 = Java 8, 55 = 11, 60 = 16, 61 = 17, 65 = 21. Point the script at the right JDK by full path rather than relying on <code>JAVA_HOME</code>.</p>
+</section>
+
+<section>
   <h2>What it looks like in your log</h2>
   <p>Search your crash report or <code>latest.log</code> for any of these:</p>
   <div class="fixpre"><pre>UnsupportedClassVersionError  ...  class file version

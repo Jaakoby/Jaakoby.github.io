@@ -136,6 +136,21 @@
 </section>
 
 <section>
+  <h2>How to be sure it is this</h2>
+  <p>The message names the method that no longer exists; the top frame names who called it. The caller is the mod with the stale expectation.</p>
+</section>
+
+<section>
+  <h2>What it gets mistaken for</h2>
+  <p>Both mods load fine, so it looks fine until that code path runs — often hours in, which makes it read like a random crash.</p>
+</section>
+
+<section>
+  <h2>What to do next</h2>
+  <p>Update the calling mod first. If it is already current, the library it calls is probably too new; match it to what the caller was built against.</p>
+</section>
+
+<section>
   <h2>What it looks like in your log</h2>
   <p>Search your crash report or <code>latest.log</code> for any of these:</p>
   <div class="fixpre"><pre>java.lang.NoSuchMethodError:

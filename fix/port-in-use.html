@@ -136,6 +136,21 @@
 </section>
 
 <section>
+  <h2>How to be sure it is this</h2>
+  <p><code>ss -ltnp | grep 25565</code> on Linux, or <code>netstat -ano | findstr 25565</code> on Windows, names the process holding it.</p>
+</section>
+
+<section>
+  <h2>What it gets mistaken for</h2>
+  <p>Voice-chat mods bind their own port and produce the identical error with a different number. Read which port the message names before assuming it is 25565.</p>
+</section>
+
+<section>
+  <h2>What to do next</h2>
+  <p>Either stop the other process or change <code>server-port</code>. If the holder is a crashed server, it may take a moment to release.</p>
+</section>
+
+<section>
   <h2>What it looks like in your log</h2>
   <p>Search your crash report or <code>latest.log</code> for any of these:</p>
   <div class="fixpre"><pre>java.net.BindException: Address already in use
